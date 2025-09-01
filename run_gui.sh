@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# BerkinWinds Test Runner Launcher
-echo "🚀 Starting BerkinWinds Test Runner..."
+# Gamma Test Runner Launcher
+echo "🚀 Starting Gamma Test Runner..."
 
 # Check if virtual environment exists
 if [ ! -d ".venv" ]; then

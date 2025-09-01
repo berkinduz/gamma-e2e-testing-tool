@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-BerkinWinds Test Runner Launcher
+Gamma Test Runner Launcher
 Simple Python script to run the GUI application
 """
 
@@ -10,7 +10,7 @@ import subprocess
 import platform
 
 def main():
-    print("🚀 Starting BerkinWinds Test Runner...")
+    print("🚀 Starting Gamma Test Runner...")
     
     # Check if virtual environment exists
     venv_path = ".venv"

@@ -1,4 +1,4 @@
-# BerkinWinds Public - E2E Test Automation Tool
+# Gamma - E2E Test Automation Tool
 
 Multi-project e-commerce test automation tool built with Selenium and Python GUI.
 
@@ -15,7 +15,7 @@ Multi-project e-commerce test automation tool built with Selenium and Python GUI
 ## 📁 Project Structure
 
 ```
-berkinwinds_public/
+gamma/
 ├── 📁 assets/           # Icons and images
 ├── 📁 config/           # Theme configuration
 ├── 📁 tests/            # Test framework
@@ -37,7 +37,7 @@ berkinwinds_public/
 ```bash
 # Clone and setup
 git clone <your-repo>
-cd berkinwinds_public
+cd gamma
 
 # Install dependencies
 pip install -r requirements_gui.txt

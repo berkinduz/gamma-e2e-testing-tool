@@ -1,5 +1,5 @@
 @echo off
-echo 🚀 Starting BerkinWinds Test Runner...
+echo 🚀 Starting Gamma Test Runner...
 
 REM Check if virtual environment exists
 if not exist ".venv" (

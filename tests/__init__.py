@@ -1,1 +1,1 @@
-# Tests package for BerkinWinds Test Runner
+# Tests package for Gamma Test Runner

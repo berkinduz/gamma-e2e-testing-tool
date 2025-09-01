@@ -25,7 +25,7 @@ class TestRunnerGUI:
         except Exception:
             pass
         self.root = root
-        self.root.title("BerkinWinds Test Runner")
+        self.root.title("Gamma Test Runner")
         self.root.geometry("1200x800")
         self.root.minsize(1000, 700)
 
@@ -394,7 +394,7 @@ class TestRunnerGUI:
         # Title
         title_label = tk.Label(
             header_frame,
-            text="BerkinWinds",
+                            text="Gamma",
             font=(self.fonts["default"], 20, "bold"),
             bg=self.colors["surface_dark"],
             fg=self.colors["text_primary"],
