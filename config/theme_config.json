@@ -1,0 +1,31 @@
+{
+  "theme": "dracula",
+  "colors": {
+    "background": "#282a36",
+    "surface": "#44475a",
+    "surface_light": "#6272a4",
+    "surface_dark": "#21222c",
+    "primary": "#bd93f9",
+    "secondary": "#8be9fd",
+    "accent": "#ffb86c",
+    "success": "#50fa7b",
+    "warning": "#f1fa8c",
+    "danger": "#ff5555",
+    "text_primary": "#f8f8f2",
+    "text_secondary": "#6272a4",
+    "text_muted": "#44475a",
+    "border": "#6272a4",
+    "selection": "#44475a"
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32
+  },
+  "fonts": {
+    "default": "Inter",
+    "mono": "Monaco"
+  }
+}

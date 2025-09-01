@@ -1,0 +1,18 @@
+{
+  "PROJECT_CONFIG": {
+    "name": "EXAMPLE"
+  },
+  "TEST_STEPS": [
+    {
+      "name": "Open Example.com",
+      "action": "navigate",
+      "url": "https://example.com"
+    },
+    {
+      "name": "Wait for heading",
+      "action": "wait",
+      "selector": "h1",
+      "timeout": 10
+    }
+  ]
+}
