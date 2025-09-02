@@ -283,3 +283,36 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Happy Testing! 🎉**
+
+## 🚧 Next steps
+
+- Edit flows in the GUI
+  - Drag-and-drop step reordering, multi-select delete
+  - JSON diff/preview and “validate before save”
+  - Inline selector tester (quick probe) for CSS selectors
+
+- Automation & scheduling
+  - Built-in scheduler for recurring runs (cron-like UI in Settings)
+  - GitHub Actions workflow with cron, matrix (projects/flows), and artifact upload
+  - Notifications: Slack/Telegram/webhook on success/failure with links to artifacts
+  - Export JUnit XML (for CI) and HTML summary (shareable report)
+  - CLI flags for schedule files, retries, shard/parallel config
+
+- More modern UI/UX
+  - Inline preview in Results (PNG/JSON/TXT)
+  - History filters (Project/Status/Date) + search
+  - Global toasts and keyboard shortcuts (e.g., Ctrl+R to Run)
+
+- More actions
+  - assertText/assertUrl/assertVisible
+  - hover/select (dropdown), scrollTo, pressKey, uploadFile
+  - waitForUrlContains, waitForNetworkIdle
+
+- CLI & orchestration
+  - `gamma run --project <P> --flow <F> --headless`
+  - Parallel runs (process-based)
+
+- Stability & observability
+  - Flaky handling: retries/backoff for wait steps
+  - Artifact packaging (zip) and quick “Open Folder” shortcut
+  - Error classification (selector/timeout/network) summary
