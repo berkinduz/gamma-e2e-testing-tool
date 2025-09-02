@@ -1,0 +1,18 @@
+[16:50:27] 🚀 Starting example project test in headless mode...
+[16:50:27] 📅 2025-09-02 16:50:27
+[16:50:27] --------------------------------------------------
+[16:50:27] 2025-09-02 16:50:27,902 INFO RUN_DIR: logs/20250902-165027-checkout
+[16:50:28] 2025-09-02 16:50:28,141 INFO CDP Network and Performance monitoring enabled
+[16:50:28] 2025-09-02 16:50:28,141 INFO [1] Open Example.com
+[16:50:28] 2025-09-02 16:50:28,865 INFO ✓ Open Example.com completed
+[16:50:28] 2025-09-02 16:50:28,865 INFO [2] Wait for heading
+[16:50:28] 2025-09-02 16:50:28,875 INFO ✓ Wait for heading completed
+[16:50:28] 2025-09-02 16:50:28,875 INFO ✅ All test steps completed successfully
+[16:50:28] 2025-09-02 16:50:28,876 INFO 📁 Test results saved to: logs/20250902-165027-checkout
+[16:50:28] 2025-09-02 16:50:28,879 INFO Saving artifacts with tag: final-success
+[16:50:29] 2025-09-02 16:50:29,201 INFO Screenshot saved: logs/20250902-165027-checkout/final-success.png
+[16:50:29] 2025-09-02 16:50:29,207 INFO Page analysis saved: logs/20250902-165027-checkout/final-success-page-analysis.json
+[16:50:29] 2025-09-02 16:50:29,208 INFO Console logs saved: logs/20250902-165027-checkout/final-success-console.json
+[16:50:29] 2025-09-02 16:50:29,209 INFO Network errors saved: logs/20250902-165027-checkout/final-success-network-errors.json
+[16:50:29] 2025-09-02 16:50:29,209 INFO Artifacts saved for tag: final-success
+[16:50:29] ✅ Test completed successfully!

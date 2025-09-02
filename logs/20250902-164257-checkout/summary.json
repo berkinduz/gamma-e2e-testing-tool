@@ -1,0 +1,10 @@
+{
+  "status": "ok",
+  "project": "example",
+  "mode": "headless",
+  "headless": true,
+  "durationSec": 1,
+  "timestamp": "2025-09-02T16:42:58.587581",
+  "logLines": 18,
+  "error": null
+}

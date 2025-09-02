@@ -1,0 +1,20 @@
+[16:41:53] 🚀 Starting google project test in normal mode...
+[16:41:53] 📅 2025-09-02 16:41:53
+[16:41:53] --------------------------------------------------
+[16:41:54] 2025-09-02 16:41:54,105 INFO RUN_DIR: logs/20250902-164154-checkout
+[16:41:54] 2025-09-02 16:41:54,643 INFO CDP Network and Performance monitoring enabled
+[16:41:54] 2025-09-02 16:41:54,643 INFO [1] Go to Google
+[16:41:55] 2025-09-02 16:41:55,287 INFO ✓ Go to Google completed
+[16:41:55] 2025-09-02 16:41:55,287 INFO [2] Wait for search box
+[16:41:55] 2025-09-02 16:41:55,303 INFO ✓ Wait for search box completed
+[16:41:55] 2025-09-02 16:41:55,303 INFO [3] Click I'm Feeling Lucky
+[16:41:57] 2025-09-02 16:41:57,244 INFO ✓ Click I'm Feeling Lucky completed
+[16:41:57] 2025-09-02 16:41:57,245 INFO ✅ All test steps completed successfully
+[16:41:57] 2025-09-02 16:41:57,245 INFO 📁 Test results saved to: logs/20250902-164154-checkout
+[16:41:57] 2025-09-02 16:41:57,249 INFO Saving artifacts with tag: final-success
+[16:41:57] 2025-09-02 16:41:57,585 INFO Screenshot saved: logs/20250902-164154-checkout/final-success.png
+[16:41:57] 2025-09-02 16:41:57,604 INFO Page analysis saved: logs/20250902-164154-checkout/final-success-page-analysis.json
+[16:41:57] 2025-09-02 16:41:57,606 INFO Console logs saved: logs/20250902-164154-checkout/final-success-console.json
+[16:41:57] 2025-09-02 16:41:57,638 INFO Network errors saved: logs/20250902-164154-checkout/final-success-network-errors.json
+[16:41:57] 2025-09-02 16:41:57,639 INFO Artifacts saved for tag: final-success
+[16:41:57] ✅ Test completed successfully!

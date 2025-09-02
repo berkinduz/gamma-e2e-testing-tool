@@ -104,6 +104,14 @@ def main():
 
     # Resolve special tokens in step values
     resolved_steps = []
+    # Apply default timeout from env if step has none
+    try:
+        default_timeout = int(os.getenv("DEFAULT_TIMEOUT", "40"))
+        if default_timeout <= 0:
+            default_timeout = 40
+    except Exception:
+        default_timeout = 40
+
     for step in test_steps:
         st = dict(step)
         if st.get("action") == "fill":
@@ -113,6 +121,9 @@ def main():
                     st["value"] = project_config.get("email", "")
                 elif val == "$PASSWORD":
                     st["value"] = project_config.get("password", "")
+        # inject default timeout if missing
+        if "timeout" not in st:
+            st["timeout"] = default_timeout
         resolved_steps.append(st)
 
     engine = BaseTestEngine(project_config)

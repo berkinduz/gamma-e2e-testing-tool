@@ -70,6 +70,18 @@ class BaseTestEngine:
         )
         chrome_opts.add_argument(f"--user-agent={user_agent}")
 
+        # If normal mode, allow custom window size and devtools
+        if not self.headless:
+            try:
+                bw = int(os.getenv("BROWSER_WIDTH", "1400"))
+                bh = int(os.getenv("BROWSER_HEIGHT", "1000"))
+                if bw > 200 and bh > 200:
+                    chrome_opts.add_argument(f"--window-size={bw},{bh}")
+            except Exception:
+                pass
+            if os.getenv("DEVTOOLS_OPEN", "0") == "1":
+                chrome_opts.add_argument("--auto-open-devtools-for-tabs")
+
         try:
             chrome_opts.set_capability(
                 "goog:loggingPrefs",
