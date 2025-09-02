@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "project": "eksisozluk",
+  "mode": "headless",
+  "headless": true,
+  "durationSec": 6.139878273010254,
+  "timestamp": "2025-09-02T15:08:53.986625",
+  "logLines": 22,
+  "error": "2025-09-02 15:08:53,870 ERROR \u274c Test failed: Critical step failed: Wait .hed3 - Selector '.hed3' not found within 40s timeout. Expected: element"
+}

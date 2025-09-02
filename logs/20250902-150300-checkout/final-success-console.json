@@ -1,0 +1,8 @@
+[
+  {
+    "level": "SEVERE",
+    "message": "https://example.com/favicon.ico - Failed to load resource: the server responded with a status of 404 ()",
+    "source": "network",
+    "timestamp": 1756814581983
+  }
+]

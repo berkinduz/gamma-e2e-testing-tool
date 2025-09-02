@@ -1,0 +1,16 @@
+[15:03:00] 🚀 Starting EKSISOZLUK project test in headless mode...
+[15:03:00] 📅 2025-09-02 15:03:00
+[15:03:00] --------------------------------------------------
+[15:03:00] 2025-09-02 15:03:00,985 INFO RUN_DIR: logs/20250902-150300-checkout
+[15:03:01] 2025-09-02 15:03:01,222 INFO CDP Network and Performance monitoring enabled
+[15:03:01] 2025-09-02 15:03:01,223 INFO [1] Open homepage
+[15:03:01] 2025-09-02 15:03:01,730 INFO ✓ Open homepage completed
+[15:03:01] 2025-09-02 15:03:01,730 INFO ✅ All test steps completed successfully
+[15:03:01] 2025-09-02 15:03:01,730 INFO 📁 Test results saved to: logs/20250902-150300-checkout
+[15:03:01] 2025-09-02 15:03:01,730 INFO Saving artifacts with tag: final-success
+[15:03:02] 2025-09-02 15:03:02,039 INFO Screenshot saved: logs/20250902-150300-checkout/final-success.png
+[15:03:02] 2025-09-02 15:03:02,045 INFO Page analysis saved: logs/20250902-150300-checkout/final-success-page-analysis.json
+[15:03:02] 2025-09-02 15:03:02,046 INFO Console logs saved: logs/20250902-150300-checkout/final-success-console.json
+[15:03:02] 2025-09-02 15:03:02,048 INFO Network errors saved: logs/20250902-150300-checkout/final-success-network-errors.json
+[15:03:02] 2025-09-02 15:03:02,048 INFO Artifacts saved for tag: final-success
+[15:03:02] ✅ Test completed successfully!

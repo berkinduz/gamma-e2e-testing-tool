@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+from tkinter import ttk, scrolledtext, messagebox, simpledialog
 import subprocess
 import threading
 import queue
@@ -31,6 +31,10 @@ class TestRunnerGUI:
 
         # Discover projects dynamically from filesystem (generic)
         self.projects = self.discover_projects()
+
+        # Simple preferences to remember last selections
+        self.prefs_path = os.path.join(os.path.dirname(__file__), ".gamma_prefs.json")
+        self.prefs = self._load_prefs()
 
         # Load theme configuration
         self.load_theme_config()
@@ -77,6 +81,69 @@ class TestRunnerGUI:
             return (r, g, b)
         except Exception:
             return (0, 0, 0)
+
+    def _load_prefs(self):
+        try:
+            if os.path.exists(self.prefs_path):
+                with open(self.prefs_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return {}
+
+    def _save_prefs(self):
+        try:
+            data = {
+                "project": self.project_var.get() if hasattr(self, "project_var") else "",
+                "flow": self.flow_var.get() if hasattr(self, "flow_var") else "",
+                "mode": self.mode_var.get() if hasattr(self, "mode_var") else "headless",
+            }
+            with open(self.prefs_path, "w", encoding="utf-8") as f:
+                json.dump(data, f)
+        except Exception:
+            pass
+
+    def _validate_flow_data(self, flow_obj: dict):
+        errors = []
+        if not isinstance(flow_obj, dict):
+            return ["Flow root must be an object"]
+        project = flow_obj.get("PROJECT_CONFIG") or flow_obj.get("TARGET_CONFIG") or flow_obj.get("BRAND_CONFIG")
+        if not isinstance(project, dict):
+            errors.append("PROJECT_CONFIG must be an object")
+        else:
+            name = project.get("name")
+            if not isinstance(name, str) or not name.strip():
+                errors.append("PROJECT_CONFIG.name is required and must be non-empty")
+        steps = flow_obj.get("TEST_STEPS")
+        if not isinstance(steps, list) or len(steps) == 0:
+            errors.append("TEST_STEPS must be a non-empty array")
+            return errors
+        for idx, step in enumerate(steps, 1):
+            if not isinstance(step, dict):
+                errors.append(f"Step {idx}: must be an object")
+                continue
+            name = step.get("name")
+            action = step.get("action")
+            if not isinstance(name, str) or not name.strip():
+                errors.append(f"Step {idx}: 'name' is required")
+            if action not in {"navigate", "click", "fill", "wait", "custom"}:
+                errors.append(f"Step {idx}: 'action' must be one of navigate/click/fill/wait/custom")
+                continue
+            if action == "navigate" and not (isinstance(step.get("url"), str) and step.get("url").strip()):
+                errors.append(f"Step {idx}: 'url' is required for action=navigate")
+            if action in {"click", "wait", "fill"} and not (isinstance(step.get("selector"), str) and step.get("selector").strip()):
+                errors.append(f"Step {idx}: 'selector' is required for action={action}")
+            if action == "fill" and not isinstance(step.get("value"), str):
+                errors.append(f"Step {idx}: 'value' is required for action=fill")
+            timeout = step.get("timeout", 40)
+            if timeout is not None:
+                try:
+                    t = int(timeout)
+                    if t <= 0:
+                        errors.append(f"Step {idx}: 'timeout' must be > 0")
+                except Exception:
+                    errors.append(f"Step {idx}: 'timeout' must be a positive integer")
+        return errors
 
     def _relative_luminance(self, hex_color: str) -> float:
         r, g, b = self._hex_to_rgb(hex_color)
@@ -139,6 +206,10 @@ class TestRunnerGUI:
                 self.refresh_flows_for_project(project_name)
             except Exception as e:
                 self.add_log(f"Failed to refresh flows: {e}", "error")
+            try:
+                self._save_prefs()
+            except Exception:
+                pass
         else:
             self.add_log(f"⚠️ Unknown project: {project_name}", "warning")
 
@@ -167,7 +238,8 @@ class TestRunnerGUI:
                     if fn.endswith(".py") and fn != "__init__.py":
                         default_script = os.path.join(project_dir, fn)
                         break
-                discovered[entry.upper()] = {
+                # Key by folder name as-is to avoid duplicate uppercase folders
+                discovered[entry] = {
                     "name": entry.upper(),
                     "script": default_script or "",
                     "dir": project_dir,
@@ -197,16 +269,31 @@ class TestRunnerGUI:
             if current in flows:
                 self.flow_combo.set(current)
             elif flows:
-                self.flow_combo.set(flows[0])
+                last = self.prefs.get("flow", "") if isinstance(self.prefs, dict) else ""
+                choose = last if last in flows else flows[0]
+                self.flow_combo.set(choose)
+                self.flow_var.set(choose)
+            else:
+                try:
+                    self.flow_combo.set("")
+                    self.flow_var.set("")
+                except Exception:
+                    pass
         # Save map for run resolution
         self.flow_map[project_name] = label_to_path
+        # Reflect availability in start button
+        self.update_button_states()
 
     def update_button_states(self):
         """Update button appearance based on current state"""
+        # Defer until buttons are created
+        if not hasattr(self, "start_button") or not hasattr(self, "stop_button"):
+            return
+        has_flow = hasattr(self, "flow_var") and bool(self.flow_var.get())
         if not self.test_running:
-            # Start button enabled
+            # Start button enabled only if a flow is selected
             self.start_button.config(
-                state="normal",
+                state=("normal" if has_flow else "disabled"),
                 bg=self.colors["surface"],
                 activebackground=self.colors["surface_secondary"],
             )
@@ -419,9 +506,9 @@ class TestRunnerGUI:
             font=(DEFAULT_FONT, 10),
         ).pack(side="left")
         # Default to first discovered project if available
-        default_project = next(iter(self.projects.keys()), "PROJECT")
+        default_project = self.prefs.get("project") if self.prefs.get("project") in self.projects else next(iter(self.projects.keys()), "")
         self.project_var = tk.StringVar(value=default_project)
-        project_combo = ttk.Combobox(
+        self.project_combo = ttk.Combobox(
             project_frame,
             textvariable=self.project_var,
             values=list(self.projects.keys()),
@@ -429,8 +516,8 @@ class TestRunnerGUI:
             width=12,
             font=(DEFAULT_FONT, 10),
         )
-        project_combo.pack(side="left", padx=(self.spacing["sm"], 0))
-        project_combo.bind("<<ComboboxSelected>>", lambda e: self.on_project_change())
+        self.project_combo.pack(side="left", padx=(self.spacing["sm"], 0))
+        self.project_combo.bind("<<ComboboxSelected>>", lambda e: self.on_project_change())
 
         # Flow selection (populated by project)
         flow_frame = tk.Frame(control_frame, bg=self.colors["surface"])
@@ -452,15 +539,18 @@ class TestRunnerGUI:
             font=(DEFAULT_FONT, 10),
         )
         self.flow_combo.pack(side="left", padx=(self.spacing["sm"], 0))
+        self.flow_combo.bind("<<ComboboxSelected>>", lambda e: self._save_prefs())
         # Internal map: project -> {label: full_path}
         self.flow_map = {}
-        self.refresh_flows_for_project(self.project_var.get())
+        # Initialize flow list for default project (if any)
+        if default_project:
+            self.refresh_flows_for_project(default_project)
 
         # Mode selection
         mode_frame = tk.Frame(control_frame, bg=self.colors["surface_dark"])
         mode_frame.pack(side=tk.LEFT, padx=self.spacing["md"])
 
-        self.mode_var = tk.StringVar(value="headless")
+        self.mode_var = tk.StringVar(value=self.prefs.get("mode", "headless"))
         mode_combo = ttk.Combobox(
             mode_frame,
             textvariable=self.mode_var,
@@ -470,6 +560,7 @@ class TestRunnerGUI:
             font=(self.fonts["default"], 11),
         )
         mode_combo.pack()
+        mode_combo.bind("<<ComboboxSelected>>", lambda e: self._save_prefs())
 
         # Control buttons with icons only - no borders or backgrounds
         button_frame = tk.Frame(header_frame, bg=self.colors["surface_dark"])
@@ -845,15 +936,19 @@ class TestRunnerGUI:
         self.history_tree.bind("<Double-1>", self.show_full_history_details)
 
     def update_button_states(self):
-        """Update button states based on test status"""
+        """Update button states based on test status and selection availability"""
+        # If buttons are not yet created (early init), skip
+        if not hasattr(self, "start_button") or not hasattr(self, "stop_button"):
+            return
+        has_flow = hasattr(self, "flow_var") and bool(self.flow_var.get())
         if self.test_running:
             self.run_button.config(state="disabled")
             self.stop_button.config(state="normal")
-            self.status_label.config(text="Running", fg=self.colors["warning"])
+            self.status_label.config(text="Running", fg=self.colors["warning"]) 
         else:
-            self.run_button.config(state="normal")
+            self.run_button.config(state=("normal" if has_flow else "disabled"))
             self.stop_button.config(state="disabled")
-            self.status_label.config(text="Ready", fg=self.colors["success"])
+            self.status_label.config(text="Ready", fg=self.colors["success"]) 
 
     def start_test(self):
         """Start the test execution"""
@@ -1950,6 +2045,18 @@ class TestRunnerGUI:
                 fg=self.colors["text_primary"],
             ).pack(side=tk.LEFT)
 
+            tk.Button(
+                header,
+                text="➕ New Project",
+                command=self.builder_create_new_project,
+                font=(self.fonts["default"], 10),
+                bg=self.colors["secondary"],
+                fg=self.contrast_on(self.colors["secondary"]),
+                bd=0,
+                relief="flat",
+                cursor="hand2",
+            ).pack(side=tk.RIGHT)
+
             # Form container
             form = tk.Frame(builder_frame, bg=self.colors["background"])
             form.pack(
@@ -2164,6 +2271,51 @@ class TestRunnerGUI:
         except Exception as e:
             self.add_log(f"❌ Error initializing Test Builder: {e}", "error")
 
+    def _normalize_project_folder(self, name: str) -> str:
+        try:
+            s = (name or "").strip()
+            import re
+            s = re.sub(r"\s+", "-", s)
+            s = re.sub(r"[^A-Za-z0-9_-]", "", s)
+            return s.lower()[:50] or "project"
+        except Exception:
+            return "project"
+
+    def refresh_all_project_combos(self, select_project: str | None = None):
+        try:
+            keys = list(self.projects.keys())
+            if hasattr(self, "project_combo"):
+                self.project_combo["values"] = keys
+            if hasattr(self, "builder_project_combo"):
+                self.builder_project_combo["values"] = keys
+            if select_project and select_project in self.projects:
+                self.project_var.set(select_project)
+                self.builder_project_var.set(select_project)
+                self.refresh_flows_for_project(select_project)
+        except Exception:
+            pass
+
+    def builder_create_new_project(self):
+        try:
+            name = simpledialog.askstring("New Project", "Project name (e.g., SHOP):", parent=self.root)
+            if not name or not name.strip():
+                return
+            folder = self._normalize_project_folder(name)
+            proj_root = os.path.join("tests", "projects")
+            os.makedirs(proj_root, exist_ok=True)
+            target_dir = os.path.join(proj_root, folder)
+            if os.path.exists(target_dir):
+                messagebox.showinfo("Info", f"Project already exists: {folder}")
+            else:
+                os.makedirs(target_dir, exist_ok=True)
+
+            self.projects = self.discover_projects()
+            select_key = folder
+            self.refresh_all_project_combos(select_key)
+            self.add_log(f"✅ Project created: {select_key}", "success")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to create project: {e}")
+
     def builder_add_step(self):
         try:
             action = self.step_action_var.get().strip()
@@ -2276,7 +2428,23 @@ class TestRunnerGUI:
                 return
 
             flow_obj = {"PROJECT_CONFIG": {"name": project}, "TEST_STEPS": steps}
-            project_dir = os.path.join("tests", "projects", project)
+
+            # Minimal validation before saving
+            errors = self._validate_flow_data(flow_obj)
+            if errors:
+                if hasattr(self, "builder_error_var"):
+                    self.builder_error_var.set("\n".join([f"- {e}" for e in errors]))
+                self.builder_status_var.set("")
+                return
+            # Map project selection to actual folder key
+            project_key = project
+            if project_key not in self.projects:
+                # Try case-insensitive match to folder keys
+                for k in self.projects.keys():
+                    if k.lower() == project.lower():
+                        project_key = k
+                        break
+            project_dir = os.path.join("tests", "projects", project_key)
             os.makedirs(project_dir, exist_ok=True)
             file_path = os.path.join(project_dir, f"{flow}.json")
             with open(file_path, "w", encoding="utf-8") as f:
@@ -2287,8 +2455,16 @@ class TestRunnerGUI:
                 self.builder_error_var.set("")
             # Refresh flows in header ONLY if builder project matches current header project
             current_project = self.project_var.get()
-            if current_project == project:
-                self.refresh_flows_for_project(project)
+            if current_project.lower() == project.lower():
+                self.refresh_flows_for_project(project_key)
+                # Auto-select the newly saved flow in header
+                try:
+                    self.flow_var.set(flow)
+                    if hasattr(self, "flow_combo"):
+                        self.flow_combo.set(flow)
+                    self._save_prefs()
+                except Exception:
+                    pass
         except Exception as e:
             if hasattr(self, "builder_error_var"):
                 self.builder_error_var.set(f"❌ Failed to save: {e}")

@@ -1,0 +1,22 @@
+[15:08:06] 🚀 Starting eksisozluk project test in headless mode...
+[15:08:06] 📅 2025-09-02 15:08:06
+[15:08:06] --------------------------------------------------
+[15:08:06] 2025-09-02 15:08:06,537 INFO RUN_DIR: logs/20250902-150806-checkout
+[15:08:06] 2025-09-02 15:08:06,781 INFO CDP Network and Performance monitoring enabled
+[15:08:06] 2025-09-02 15:08:06,781 INFO [1] Navigate to https://eksisozluk.com/
+[15:08:12] 2025-09-02 15:08:12,605 INFO ✓ Navigate to https://eksisozluk.com/ completed
+[15:08:12] 2025-09-02 15:08:12,605 INFO [2] Wait .topic-list
+[15:08:12] 2025-09-02 15:08:12,616 INFO ✓ Wait .topic-list completed
+[15:08:12] 2025-09-02 15:08:12,616 INFO [3] Click .topic-list
+[15:08:12] 2025-09-02 15:08:12,921 INFO ✓ Click .topic-list completed
+[15:08:12] 2025-09-02 15:08:12,921 INFO [4] Wait .hed3
+[15:08:53] 2025-09-02 15:08:53,373 ERROR ✗ Wait .hed3 failed: Selector '.hed3' not found within 40s timeout. Expected: element
+[15:08:53] 2025-09-02 15:08:53,373 INFO Saving artifacts with tag: wait-.hed3-failed
+[15:08:53] 2025-09-02 15:08:53,751 INFO Screenshot saved: logs/20250902-150806-checkout/wait-.hed3-failed.png
+[15:08:53] 2025-09-02 15:08:53,784 INFO Page analysis saved: logs/20250902-150806-checkout/wait-.hed3-failed-page-analysis.json
+[15:08:53] 2025-09-02 15:08:53,786 INFO Console logs saved: logs/20250902-150806-checkout/wait-.hed3-failed-console.json
+[15:08:53] 2025-09-02 15:08:53,870 INFO Network errors saved: logs/20250902-150806-checkout/wait-.hed3-failed-network-errors.json
+[15:08:53] 2025-09-02 15:08:53,870 INFO Artifacts saved for tag: wait-.hed3-failed
+[15:08:53] 2025-09-02 15:08:53,870 ERROR ❌ Test failed: Critical step failed: Wait .hed3 - Selector '.hed3' not found within 40s timeout. Expected: element
+[15:08:53] 2025-09-02 15:08:53,871 INFO 📁 Test results saved to: logs/20250902-150806-checkout
+[15:08:53] ❌ Test failed!
