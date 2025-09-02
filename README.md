@@ -4,13 +4,14 @@ Multi-project e-commerce test automation tool built with Selenium and Python GUI
 
 ## 🚀 Features
 
-- **Modern GUI**: Dark theme with intuitive controls
+- **Modern GUI**: Dark theme with intuitive controls (no coding required)
 - **Multi-project Support**: Google, Example, and more
 - **Headless & Normal Mode**: Run tests with or without browser UI
 - **JSON Test Flows**: Create tests without coding
 - **Artifact Collection**: Screenshots, logs, and analysis on failures
 - **Test Builder**: Visual test creation interface
 - **Cross-platform**: Windows, macOS, Linux
+ - **Settings Panel**: Per‑project Email/Password/User‑Agent, normal mode window size and DevTools toggle; changes apply without restart
 
 ## 📁 Project Structure
 
@@ -32,7 +33,7 @@ gamma/
 
 ## 🎯 Quick Start
 
-### 1. Setup Environment
+### 1. Setup Environment (no Python knowledge needed)
 
 ```bash
 # Clone and setup
@@ -42,13 +43,13 @@ cd gamma
 # Install dependencies
 pip install -r requirements_gui.txt
 
-# Copy environment template
-cp env.example .env
+# Optional: Create .env (if you want to preload emails/passwords/UA). If you skip this step, you can set them later from Settings.
+cp env.example .env  # optional
 ```
 
 ### 2. Configure Projects
 
-Edit `.env` with your project credentials:
+Option A) Edit `.env` with your project credentials (recommended for CI):
 
 ```bash
 # Google Project
@@ -64,6 +65,8 @@ NEW_PROJECT_EMAIL=user@newproject.com
 NEW_PROJECT_PASSWORD=password123
 ```
 
+Option B) Use the GUI Settings tab to set Email/Password/User‑Agent and Browser options (applies immediately).
+
 ### 3. Run Tests
 
 ```bash
@@ -76,9 +79,9 @@ python tests/json_runner.py tests/projects/google/GOOGLE_HOMEPAGE.json GOOGLE
 
 ## 🧪 Creating Tests
 
-### Option 1: GUI Test Builder (Recommended)
+### Option 1: GUI Create Test (Recommended)
 
-1. Launch GUI → "Test Builder" tab
+1. Launch GUI → "Create Test" tab
 2. Select project from dropdown
 3. Add steps: navigate, click, fill, wait
 4. Save flow → automatically discovered by GUI
@@ -142,11 +145,9 @@ Put a `*.py` under `tests/projects/<PROJECT>/` using the shared engine.
 <PROJECT>_PASSWORD=password123
 
 # Optional settings
-LOG_LEVEL=INFO                    # DEBUG, INFO, WARNING, ERROR
-CONSOLE_MIN_LEVEL=WARNING         # Minimum console log level
-DEFAULT_TIMEOUT=40               # Default step timeout (seconds)
-SCREENSHOT_ON_FAILURE=true       # Always save screenshots on failure
 LOGS_MAX_RUNS=10                 # Keep only latest N test runs
+# Per project creds (loaded automatically): <PROJECT>_EMAIL / <PROJECT>_PASSWORD / <PROJECT>_USER_AGENT
+# Browser (normal mode): BROWSER_WIDTH / BROWSER_HEIGHT / DEVTOOLS_OPEN (0/1)
 ```
 
 ### Theme Configuration
@@ -196,11 +197,8 @@ Failed tests automatically save:
 
 1. Create folder: `tests/projects/<PROJECT>/`
 2. Add `<FLOW>.json` with `PROJECT_CONFIG` and `TEST_STEPS`
-3. Add to `.env`:
-   - `<PROJECT>_EMAIL=...`
-   - `<PROJECT>_PASSWORD=...`
-   - `<PROJECT>_USER_AGENT=...` (optional)
-4. Start GUI → select Project and Flow → Run
+3. Optionally add to `.env`: `<PROJECT>_EMAIL`, `<PROJECT>_PASSWORD`, `<PROJECT>_USER_AGENT`
+4. Or set them via GUI → Settings; Start GUI → select Project and Flow → Run
 
 ### Python Method
 
@@ -217,13 +215,19 @@ Failed tests automatically save:
 - **Screenshot issues**: Check file permissions, disk space
 - **Import errors**: Verify `sys.path.append` and `__init__.py` files
 
-### Debug Mode
+### Debug / Verbosity
 
 Enable detailed logging:
 
 ```bash
-export LOG_LEVEL=DEBUG
-export CONSOLE_MIN_LEVEL=INFO
+Use the GUI Logs tab for details; you can also increase Selenium/console verbosity via environment if needed.
+
+## 🧭 Tips for non‑developers
+
+- Use Settings to enter Email/Password/User‑Agent; values apply instantly, no restart needed.
+- Normal mode browser size and DevTools can be set from Settings.
+- When a test finishes, the Logs tab shows a “Click to see results” link.
+- You can clear all logs from the History tab.
 ```
 
 ### Test Builder Issues
