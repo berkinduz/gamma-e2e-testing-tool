@@ -1,5 +1,7 @@
 # Gamma - E2E Test Automation Tool
 
+![App Screenshot](assets/app.png)
+
 Multi-project e-commerce test automation tool built with Selenium and Python GUI.
 
 ## 🚀 Features
