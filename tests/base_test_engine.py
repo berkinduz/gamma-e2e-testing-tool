@@ -37,6 +37,7 @@ class BaseTestEngine:
         self.run_dir = None
         self.steps = []
         self.failure_occurred = False
+        self.aborted_by_user = False
 
     def setup_driver(self):
         """Setup Chrome driver with appropriate options"""
@@ -68,6 +69,18 @@ class BaseTestEngine:
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
         )
         chrome_opts.add_argument(f"--user-agent={user_agent}")
+
+        # If normal mode, allow custom window size and devtools
+        if not self.headless:
+            try:
+                bw = int(os.getenv("BROWSER_WIDTH", "1400"))
+                bh = int(os.getenv("BROWSER_HEIGHT", "1000"))
+                if bw > 200 and bh > 200:
+                    chrome_opts.add_argument(f"--window-size={bw},{bh}")
+            except Exception:
+                pass
+            if os.getenv("DEVTOOLS_OPEN", "0") == "1":
+                chrome_opts.add_argument("--auto-open-devtools-for-tabs")
 
         try:
             chrome_opts.set_capability(
@@ -203,6 +216,15 @@ class BaseTestEngine:
             logging.warning(
                 f"Cannot save artifacts: run_dir={self.run_dir}, driver={self.driver is not None}"
             )
+            return
+
+        # If the driver session is gone (e.g., browser closed), skip artifact capture quietly
+        try:
+            _ = getattr(self.driver, "session_id", None)
+            # Accessing something trivial to trigger potential invalid session
+            _ = self.driver.title if _ else None
+        except Exception:
+            logging.info("Skip artifacts: WebDriver session is not available (probably closed)")
             return
 
         pathlib.Path(self.run_dir).mkdir(parents=True, exist_ok=True)
@@ -383,6 +405,14 @@ class BaseTestEngine:
             )
             logging.error(f"✗ {step_name} failed: {step_data['error']}")
 
+            # Detect user-aborted scenarios (closed window / invalid session)
+            err_text = str(e).lower()
+            if any(k in err_text for k in ["invalid session id", "chrome not reachable", "no such window"]):
+                self.aborted_by_user = True
+                # Do not attempt artifacts on abort
+                self.steps.append(step_data)
+                raise Exception("Aborted: browser closed by user")
+
             # Save artifacts on failure
             if self.driver:
                 try:
@@ -448,6 +478,7 @@ class BaseTestEngine:
                 self.driver is not None
                 and overall_error_message
                 and not self.failure_occurred
+                and not self.aborted_by_user
             ):
                 try:
                     self.save_artifacts("final-failed")
@@ -467,19 +498,23 @@ class BaseTestEngine:
 
             # Cleanup
             if self.driver:
-                if self.headless or overall_error_message is None:
-                    self.driver.quit()
+                try:
+                    if self.headless or overall_error_message is None:
+                        self.driver.quit()
+                except Exception:
+                    pass
 
     def save_test_summary(self, error_message=None):
         """Save test execution summary"""
         if not self.run_dir:
             return
 
+        status = "aborted" if self.aborted_by_user else ("failed" if error_message else "passed")
         summary = {
-                            "project": self.project_name,
+            "project": self.project_name,
             "mode": "headless" if self.headless else "normal",
-            "status": "failed" if error_message else "passed",
-            "error": error_message,
+            "status": status,
+            "error": None if self.aborted_by_user else error_message,
             "timestamp": datetime.now().isoformat(),
             "steps": self.steps,
             "total_steps": len(self.steps),
@@ -492,7 +527,7 @@ class BaseTestEngine:
         ) as f:
             json.dump(summary, f, ensure_ascii=False, indent=2)
 
-        if error_message:
+        if error_message and not self.aborted_by_user:
             # Append basic error header; traceback (if any) appended earlier
             with open(
                 os.path.join(self.run_dir, "error_details.txt"), "a", encoding="utf-8"

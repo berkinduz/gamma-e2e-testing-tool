@@ -22,6 +22,48 @@ def normalize_prefix(name: str) -> str:
     return (name or "").upper().replace("-", "_").replace(" ", "_")
 
 
+def _validate_flow_json(data: dict) -> list:
+    """Return a list of human-friendly error messages if JSON is invalid."""
+    errors = []
+    if not isinstance(data, dict):
+        return ["Flow root must be an object"]
+
+    project = data.get("PROJECT_CONFIG") or data.get("TARGET_CONFIG") or data.get("BRAND_CONFIG")
+    if not isinstance(project, dict):
+        errors.append("PROJECT_CONFIG must be an object")
+    else:
+        name = project.get("name")
+        if not isinstance(name, str) or not name.strip():
+            errors.append("PROJECT_CONFIG.name is required and must be non-empty string")
+
+    steps = data.get("TEST_STEPS")
+    if not isinstance(steps, list) or len(steps) == 0:
+        errors.append("TEST_STEPS must be a non-empty array")
+        return errors
+
+    for idx, step in enumerate(steps, 1):
+        if not isinstance(step, dict):
+            errors.append(f"Step {idx}: must be an object")
+            continue
+        name = step.get("name")
+        action = step.get("action")
+        if not isinstance(name, str) or not name.strip():
+            errors.append(f"Step {idx}: 'name' is required")
+        if action not in {"navigate", "click", "fill", "wait", "custom"}:
+            errors.append(f"Step {idx}: 'action' must be one of navigate/click/fill/wait/custom")
+            continue
+        if action == "navigate" and not (isinstance(step.get("url"), str) and step.get("url").strip()):
+            errors.append(f"Step {idx}: 'url' is required for action=navigate")
+        if action in {"click", "wait", "fill"} and not (isinstance(step.get("selector"), str) and step.get("selector").strip()):
+            errors.append(f"Step {idx}: 'selector' is required for action={action}")
+        if action == "fill" and not (isinstance(step.get("value"), str)):
+            errors.append(f"Step {idx}: 'value' is required for action=fill")
+        timeout = step.get("timeout", 40)
+        if timeout is not None and not (isinstance(timeout, int) and timeout > 0):
+            errors.append(f"Step {idx}: 'timeout' must be a positive integer if provided")
+    return errors
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: json_runner.py <flow.json> [PROJECT_NAME]")
@@ -35,6 +77,14 @@ def main():
 
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
+    # Minimal validation before running
+    validation_errors = _validate_flow_json(data)
+    if validation_errors:
+        print("Invalid flow JSON:")
+        for err in validation_errors:
+            print(f" - {err}")
+        sys.exit(2)
 
     project_config = data.get("PROJECT_CONFIG", data.get("TARGET_CONFIG", data.get("BRAND_CONFIG", {})))
     if "name" not in project_config:
@@ -54,6 +104,14 @@ def main():
 
     # Resolve special tokens in step values
     resolved_steps = []
+    # Apply default timeout from env if step has none
+    try:
+        default_timeout = int(os.getenv("DEFAULT_TIMEOUT", "40"))
+        if default_timeout <= 0:
+            default_timeout = 40
+    except Exception:
+        default_timeout = 40
+
     for step in test_steps:
         st = dict(step)
         if st.get("action") == "fill":
@@ -63,6 +121,9 @@ def main():
                     st["value"] = project_config.get("email", "")
                 elif val == "$PASSWORD":
                     st["value"] = project_config.get("password", "")
+        # inject default timeout if missing
+        if "timeout" not in st:
+            st["timeout"] = default_timeout
         resolved_steps.append(st)
 
     engine = BaseTestEngine(project_config)
