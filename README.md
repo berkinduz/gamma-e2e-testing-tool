@@ -2,6 +2,27 @@
 
 ![App Screenshot](assets/app.png)
 
+## ⚡ Install & Run (Quick Start)
+
+```bash
+# Clone
+git clone https://github.com/berkinduz/gamma-e2e-testing-tool.git
+cd gamma-e2e-testing-tool
+
+# Python deps
+pip install -r requirements_gui.txt
+
+# (Optional) .env if you want to preload Email/Password/UA
+# cp env.example .env
+
+# Start GUI
+python run_gui.py
+```
+
+– Create Test → steps → Save
+– Select Project & Flow → Run
+– Logs → “Click to see results” → Results
+
 Multi-project e-commerce test automation tool built with Selenium and Python GUI.
 
 ## 🚀 Features
