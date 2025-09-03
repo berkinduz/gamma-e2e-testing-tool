@@ -190,3 +190,4 @@ $RECYCLE.BIN/
 # Project specific
 config/local_*
 *.log
+.gamma_prefs.json
