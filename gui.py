@@ -74,53 +74,98 @@ class TestRunnerGUI:
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
     def build_header(self):
-        self.header = tk.Frame(self.main_frame, bg=self.colors["surface_dark"], height=56)
+        self.header = tk.Frame(
+            self.main_frame, bg=self.colors["surface_dark"], height=56
+        )
         self.header.pack(fill=tk.X)
         self.header.pack_propagate(False)
 
-        left = tk.Frame(self.header, bg=self.colors["surface_dark"]) 
-        left.pack(side=tk.LEFT, padx=self.spacing["lg"], pady=self.spacing["xs"]) 
+        left = tk.Frame(self.header, bg=self.colors["surface_dark"])
+        left.pack(side=tk.LEFT, padx=self.spacing["lg"], pady=self.spacing["xs"])
         try:
             if os.path.exists("assets/logo.png"):
-                _logo_img = Image.open("assets/logo.png").resize((48, 48), Image.Resampling.LANCZOS)
+                _logo_img = Image.open("assets/logo.png").resize(
+                    (48, 48), Image.Resampling.LANCZOS
+                )
                 self.logo_icon = ImageTk.PhotoImage(_logo_img)
-                tk.Label(left, image=self.logo_icon, bg=self.colors["surface_dark"]).pack(side=tk.LEFT)
+                tk.Label(
+                    left, image=self.logo_icon, bg=self.colors["surface_dark"]
+                ).pack(side=tk.LEFT)
         except Exception:
             pass
-        tk.Label(left, text="Gamma", font=(self.fonts["default"], 16, "bold"), bg=self.colors["surface_dark"], fg=self.colors["text_primary"]).pack(side=tk.LEFT, padx=(8, 0))
+        tk.Label(
+            left,
+            text="Gamma",
+            font=(self.fonts["default"], 16, "bold"),
+            bg=self.colors["surface_dark"],
+            fg=self.colors["text_primary"],
+        ).pack(side=tk.LEFT, padx=(8, 0))
 
         # Right: settings icon
-        right_header = tk.Frame(self.header, bg=self.colors["surface_dark"]) 
-        right_header.pack(side=tk.RIGHT, padx=self.spacing["lg"], pady=self.spacing["xs"]) 
-        # Settings button: use PNG if available, otherwise a minimal glyph; navigate to Settings tab
-        if getattr(self, "settings_icon", None) is not None:
-            btn = tk.Button(
-                right_header,
-                image=self.settings_icon,
-                command=lambda: self.notebook.select(3),
-                bg=self.colors["surface_dark"],
-                bd=0,
-                relief="flat",
-                cursor="hand2",
-                activebackground=self.colors["surface_dark"],
-            )
+        right_header = tk.Frame(self.header, bg=self.colors["surface_dark"])
+        # On macOS, push settings icon a bit further right
+        if platform.system() == "Darwin":
+            right_header.pack(
+                side=tk.RIGHT, padx=(self.spacing["lg"] + 8), pady=self.spacing["xs"]
+            )  # extra right padding
         else:
-            btn = tk.Button(
-                right_header,
-                text="⚙",
-                command=lambda: self.notebook.select(3),
-                font=(self.fonts["default"], 16, "bold"),
-                bg=self.colors["surface_dark"],
-                fg=self.colors["text_primary"],
-                bd=0,
-                relief="flat",
-                cursor="hand2",
-                activebackground=self.colors["surface_dark"],
+            right_header.pack(
+                side=tk.RIGHT, padx=self.spacing["lg"], pady=self.spacing["xs"]
             )
+        # Settings control (macOS: clickable label with larger image to bypass ttk sizing)
+        # Navigate to Settings tab when clicked
+        if getattr(self, "settings_icon", None) is not None:
+            if platform.system() == "Darwin":
+                btn = tk.Label(
+                    right_header,
+                    image=self.settings_icon,
+                    bg=self.colors["surface_dark"],
+                    cursor="hand2",
+                )
+                btn.bind("<Button-1>", lambda e: self.notebook.select(3))
+            else:
+                btn = tk.Button(
+                    right_header,
+                    image=self.settings_icon,
+                    command=lambda: self.notebook.select(3),
+                    bg=self.colors["surface_dark"],
+                    bd=0,
+                    relief="flat",
+                    cursor="hand2",
+                    activebackground=self.colors["surface_dark"],
+                )
+        else:
+            if platform.system() == "Darwin":
+                btn = tk.Label(
+                    right_header,
+                    text="⚙",
+                    bg=self.colors["surface_dark"],
+                    fg=self.colors["text_primary"],
+                    font=(self.fonts["default"], 18, "bold"),
+                    cursor="hand2",
+                )
+                btn.bind("<Button-1>", lambda e: self.notebook.select(3))
+            else:
+                btn = tk.Button(
+                    right_header,
+                    text="⚙",
+                    command=lambda: self.notebook.select(3),
+                    font=(self.fonts["default"], 16, "bold"),
+                    bg=self.colors["surface_dark"],
+                    fg=self.colors["text_primary"],
+                    bd=0,
+                    relief="flat",
+                    cursor="hand2",
+                    activebackground=self.colors["surface_dark"],
+                )
         btn.pack()
         # Remove any default highlight border around the button
         try:
-            btn.configure(highlightthickness=0, borderwidth=0, highlightbackground=self.colors["surface_dark"]) 
+            btn.configure(
+                highlightthickness=0,
+                borderwidth=0,
+                highlightbackground=self.colors["surface_dark"],
+            )
         except Exception:
             pass
 
@@ -134,16 +179,41 @@ class TestRunnerGUI:
         self.sidebar.pack_propagate(False)
 
         # Controls in sidebar
-        default_project = self.prefs.get("project") if self.prefs.get("project") in self.projects else next(iter(self.projects.keys()), "")
+        default_project = (
+            self.prefs.get("project")
+            if self.prefs.get("project") in self.projects
+            else next(iter(self.projects.keys()), "")
+        )
         self.project_var = tk.StringVar(value=default_project)
-        tk.Label(self.sidebar, text="Project", bg=self.colors["surface"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10)).pack(anchor="w", padx=12, pady=(12, 2))
-        self.project_combo = ttk.Combobox(self.sidebar, textvariable=self.project_var, values=list(self.projects.keys()), state="readonly")
+        tk.Label(
+            self.sidebar,
+            text="Project",
+            bg=self.colors["surface"],
+            fg=self.colors["text_secondary"],
+            font=(self.fonts["default"], 10),
+        ).pack(anchor="w", padx=12, pady=(12, 2))
+        self.project_combo = ttk.Combobox(
+            self.sidebar,
+            textvariable=self.project_var,
+            values=list(self.projects.keys()),
+            state="readonly",
+        )
         self.project_combo.pack(fill=tk.X, padx=12)
-        self.project_combo.bind("<<ComboboxSelected>>", lambda e: self.on_project_change())
+        self.project_combo.bind(
+            "<<ComboboxSelected>>", lambda e: self.on_project_change()
+        )
 
         self.flow_var = tk.StringVar()
-        tk.Label(self.sidebar, text="Flow", bg=self.colors["surface"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10)).pack(anchor="w", padx=12, pady=(10, 2))
-        self.flow_combo = ttk.Combobox(self.sidebar, textvariable=self.flow_var, values=[], state="readonly")
+        tk.Label(
+            self.sidebar,
+            text="Flow",
+            bg=self.colors["surface"],
+            fg=self.colors["text_secondary"],
+            font=(self.fonts["default"], 10),
+        ).pack(anchor="w", padx=12, pady=(10, 2))
+        self.flow_combo = ttk.Combobox(
+            self.sidebar, textvariable=self.flow_var, values=[], state="readonly"
+        )
         self.flow_combo.pack(fill=tk.X, padx=12)
         self.flow_combo.bind("<<ComboboxSelected>>", lambda e: self._save_prefs())
         self.flow_map = {}
@@ -151,37 +221,120 @@ class TestRunnerGUI:
             self.refresh_flows_for_project(default_project)
 
         self.mode_var = tk.StringVar(value=self.prefs.get("mode", "headless"))
-        tk.Label(self.sidebar, text="Mode", bg=self.colors["surface"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10)).pack(anchor="w", padx=12, pady=(10, 2))
-        mode_combo = ttk.Combobox(self.sidebar, textvariable=self.mode_var, values=["headless", "normal"], state="readonly")
+        tk.Label(
+            self.sidebar,
+            text="Mode",
+            bg=self.colors["surface"],
+            fg=self.colors["text_secondary"],
+            font=(self.fonts["default"], 10),
+        ).pack(anchor="w", padx=12, pady=(10, 2))
+        mode_combo = ttk.Combobox(
+            self.sidebar,
+            textvariable=self.mode_var,
+            values=["headless", "normal"],
+            state="readonly",
+        )
         mode_combo.pack(fill=tk.X, padx=12)
         mode_combo.bind("<<ComboboxSelected>>", lambda e: self._save_prefs())
 
         # Actions
-        actions = tk.Frame(self.sidebar, bg=self.colors["surface"]) 
+        actions = tk.Frame(self.sidebar, bg=self.colors["surface"])
         actions.pack(fill=tk.X, padx=12, pady=12)
-        self.run_button = tk.Button(actions, text="Run", command=self.start_test, font=(self.fonts["default"], 10, "bold"), bg=self.colors["primary"], fg=self.contrast_on(self.colors["primary"]), bd=0, relief="flat", cursor="hand2")
-        self.run_button.pack(side=tk.LEFT, expand=True, fill=tk.X)
-        self.stop_button = tk.Button(actions, text="Stop", command=self.stop_test, font=(self.fonts["default"], 10, "bold"), bg=self.colors["surface_light"], fg=self.colors["text_primary"], bd=0, relief="flat", cursor="hand2")
-        self.stop_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(8, 0))
+        is_macos = platform.system() == "Darwin"
+        self.run_button = ttk.Button(
+            actions,
+            text="Run",
+            command=self.start_test,
+            style="Primary.TButton",
+            cursor="hand2",
+        )
+        if is_macos:
+            self.run_button.pack(side=tk.LEFT, expand=True, fill=tk.X)
+        else:
+            # Non-macOS: use original tk.Button styling
+            for w in list(actions.children.values()):
+                w.destroy()
+            self.run_button = tk.Button(
+                actions,
+                text="Run",
+                command=self.start_test,
+                font=(self.fonts["default"], 10, "bold"),
+                bg=self.colors["primary"],
+                fg=self.contrast_on(self.colors["primary"]),
+                bd=0,
+                relief="flat",
+                cursor="hand2",
+            )
+            self.run_button.pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+        self.stop_button = ttk.Button(
+            actions,
+            text="Stop",
+            command=self.stop_test,
+            style="Surface.TButton",
+            cursor="hand2",
+        )
+        if is_macos:
+            self.stop_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(8, 0))
+        else:
+            self.stop_button.destroy()
+            self.stop_button = tk.Button(
+                actions,
+                text="Stop",
+                command=self.stop_test,
+                font=(self.fonts["default"], 10, "bold"),
+                bg=self.colors["surface_light"],
+                fg=self.colors["text_primary"],
+                bd=0,
+                relief="flat",
+                cursor="hand2",
+            )
+            self.stop_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(8, 0))
 
         # Navigation
-        nav = tk.Frame(self.sidebar, bg=self.colors["surface"]) 
+        nav = tk.Frame(self.sidebar, bg=self.colors["surface"])
         nav.pack(fill=tk.X, padx=12)
+
         def _nav(label):
             try:
-                idx = {"Logs":0, "Results":1, "History":2, "Create Test":4}[label]
+                idx = {"Logs": 0, "Results": 1, "History": 2, "Create Test": 4}[label]
                 self.notebook.select(idx)
             except Exception:
                 pass
+
         for lbl in ["Logs", "Results", "History", "Create Test"]:
-            tk.Button(nav, text=lbl, command=lambda l=lbl: _nav(l), bg=self.colors["surface_light"], fg=self.colors["text_primary"], bd=0, relief="flat", cursor="hand2").pack(fill=tk.X, pady=4)
+            if is_macos:
+                ttk.Button(
+                    nav,
+                    text=lbl,
+                    command=lambda l=lbl: _nav(l),
+                    style="Sidebar.TButton",
+                    cursor="hand2",
+                ).pack(fill=tk.X, pady=4)
+            else:
+                tk.Button(
+                    nav,
+                    text=lbl,
+                    command=lambda l=lbl: _nav(l),
+                    bg=self.colors["surface_light"],
+                    fg=self.colors["text_primary"],
+                    bd=0,
+                    relief="flat",
+                    cursor="hand2",
+                ).pack(fill=tk.X, pady=4)
 
         # Status at bottom
-        self.status_label = tk.Label(self.sidebar, text="Ready", font=(self.fonts["default"], 11, "bold"), bg=self.colors["surface"], fg=self.colors["success"]) 
+        self.status_label = tk.Label(
+            self.sidebar,
+            text="Ready",
+            font=(self.fonts["default"], 11, "bold"),
+            bg=self.colors["surface"],
+            fg=self.colors["success"],
+        )
         self.status_label.pack(side=tk.BOTTOM, anchor="w", padx=12, pady=12)
 
         # Content container
-        self.content = tk.Frame(self.body, bg=self.colors["background"]) 
+        self.content = tk.Frame(self.body, bg=self.colors["background"])
         self.content.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
     def build_tabs(self):
@@ -195,51 +348,151 @@ class TestRunnerGUI:
 
     def setup_settings_tab(self):
         try:
-            settings_frame = tk.Frame(self.notebook, bg=self.colors["background"]) 
+            settings_frame = tk.Frame(self.notebook, bg=self.colors["background"])
             self.notebook.add(settings_frame, text="Settings")
 
-            body = tk.Frame(settings_frame, bg=self.colors["background"]) 
+            body = tk.Frame(settings_frame, bg=self.colors["background"])
             body.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
 
             # Section: Environment variables (per project)
-            tk.Label(body, text="Environment Variables (per project)", bg=self.colors["background"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10, "bold")).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0,6))
-            tk.Label(body, text="User Agent", bg=self.colors["background"], fg=self.colors["text_primary"]).grid(row=1, column=0, sticky="w")
-            ua_var = tk.StringVar(value=os.getenv("{}_USER_AGENT".format(self.project_var.get().upper()), ""))
-            ua_entry = tk.Entry(body, textvariable=ua_var, bg=self.colors["surface"], fg=self.colors["text_primary"], insertbackground=self.colors["text_primary"]) 
-            ua_entry.grid(row=1, column=1, sticky="we", padx=(8,0))
+            tk.Label(
+                body,
+                text="Environment Variables (per project)",
+                bg=self.colors["background"],
+                fg=self.colors["text_secondary"],
+                font=(self.fonts["default"], 10, "bold"),
+            ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 6))
+            tk.Label(
+                body,
+                text="User Agent",
+                bg=self.colors["background"],
+                fg=self.colors["text_primary"],
+            ).grid(row=1, column=0, sticky="w")
+            ua_var = tk.StringVar(
+                value=os.getenv(
+                    "{}_USER_AGENT".format(self.project_var.get().upper()), ""
+                )
+            )
+            ua_entry = tk.Entry(
+                body,
+                textvariable=ua_var,
+                bg=self.colors["surface"],
+                fg=self.colors["text_primary"],
+                insertbackground=self.colors["text_primary"],
+            )
+            ua_entry.grid(row=1, column=1, sticky="we", padx=(8, 0))
 
-            tk.Label(body, text="Email (login)", bg=self.colors["background"], fg=self.colors["text_primary"]).grid(row=2, column=0, sticky="w", pady=(6,0))
-            email_var = tk.StringVar(value=os.getenv("{}_EMAIL".format(self.project_var.get().upper()), ""))
-            tk.Entry(body, textvariable=email_var, bg=self.colors["surface"], fg=self.colors["text_primary"], insertbackground=self.colors["text_primary"]).grid(row=2, column=1, sticky="we", padx=(8,0), pady=(6,0))
+            tk.Label(
+                body,
+                text="Email (login)",
+                bg=self.colors["background"],
+                fg=self.colors["text_primary"],
+            ).grid(row=2, column=0, sticky="w", pady=(6, 0))
+            email_var = tk.StringVar(
+                value=os.getenv("{}_EMAIL".format(self.project_var.get().upper()), "")
+            )
+            tk.Entry(
+                body,
+                textvariable=email_var,
+                bg=self.colors["surface"],
+                fg=self.colors["text_primary"],
+                insertbackground=self.colors["text_primary"],
+            ).grid(row=2, column=1, sticky="we", padx=(8, 0), pady=(6, 0))
 
-            tk.Label(body, text="Password (login)", bg=self.colors["background"], fg=self.colors["text_primary"]).grid(row=3, column=0, sticky="w", pady=(6,0))
-            pw_var = tk.StringVar(value=os.getenv("{}_PASSWORD".format(self.project_var.get().upper()), ""))
-            tk.Entry(body, textvariable=pw_var, show="*", bg=self.colors["surface"], fg=self.colors["text_primary"], insertbackground=self.colors["text_primary"]).grid(row=3, column=1, sticky="we", padx=(8,0), pady=(6,0))
+            tk.Label(
+                body,
+                text="Password (login)",
+                bg=self.colors["background"],
+                fg=self.colors["text_primary"],
+            ).grid(row=3, column=0, sticky="w", pady=(6, 0))
+            pw_var = tk.StringVar(
+                value=os.getenv(
+                    "{}_PASSWORD".format(self.project_var.get().upper()), ""
+                )
+            )
+            tk.Entry(
+                body,
+                textvariable=pw_var,
+                show="*",
+                bg=self.colors["surface"],
+                fg=self.colors["text_primary"],
+                insertbackground=self.colors["text_primary"],
+            ).grid(row=3, column=1, sticky="we", padx=(8, 0), pady=(6, 0))
 
             # Section: Defaults (minimal)
-            tk.Label(body, text="Defaults", bg=self.colors["background"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10, "bold")).grid(row=4, column=0, columnspan=2, sticky="w", pady=(12,6))
+            tk.Label(
+                body,
+                text="Defaults",
+                bg=self.colors["background"],
+                fg=self.colors["text_secondary"],
+                font=(self.fonts["default"], 10, "bold"),
+            ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(12, 6))
 
             # Section: Browser (normal mode)
-            tk.Label(body, text="Browser (normal mode)", bg=self.colors["background"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10, "bold")).grid(row=5, column=0, columnspan=2, sticky="w", pady=(12,6))
-            tk.Label(body, text="Window Size (WxH)", bg=self.colors["background"], fg=self.colors["text_primary"]).grid(row=6, column=0, sticky="w")
+            tk.Label(
+                body,
+                text="Browser (normal mode)",
+                bg=self.colors["background"],
+                fg=self.colors["text_secondary"],
+                font=(self.fonts["default"], 10, "bold"),
+            ).grid(row=5, column=0, columnspan=2, sticky="w", pady=(12, 6))
+            tk.Label(
+                body,
+                text="Window Size (WxH)",
+                bg=self.colors["background"],
+                fg=self.colors["text_primary"],
+            ).grid(row=6, column=0, sticky="w")
             bw_var = tk.StringVar(value=os.getenv("BROWSER_WIDTH", "1400"))
             bh_var = tk.StringVar(value=os.getenv("BROWSER_HEIGHT", "1000"))
-            size_frame = tk.Frame(body, bg=self.colors["background"]) 
-            size_frame.grid(row=6, column=1, sticky="w", padx=(8,0))
-            tk.Entry(size_frame, textvariable=bw_var, width=6, bg=self.colors["surface"], fg=self.colors["text_primary"], insertbackground=self.colors["text_primary"]).pack(side=tk.LEFT)
-            tk.Label(size_frame, text="x", bg=self.colors["background"], fg=self.colors["text_secondary"]).pack(side=tk.LEFT, padx=4)
-            tk.Entry(size_frame, textvariable=bh_var, width=6, bg=self.colors["surface"], fg=self.colors["text_primary"], insertbackground=self.colors["text_primary"]).pack(side=tk.LEFT)
+            size_frame = tk.Frame(body, bg=self.colors["background"])
+            size_frame.grid(row=6, column=1, sticky="w", padx=(8, 0))
+            tk.Entry(
+                size_frame,
+                textvariable=bw_var,
+                width=6,
+                bg=self.colors["surface"],
+                fg=self.colors["text_primary"],
+                insertbackground=self.colors["text_primary"],
+            ).pack(side=tk.LEFT)
+            tk.Label(
+                size_frame,
+                text="x",
+                bg=self.colors["background"],
+                fg=self.colors["text_secondary"],
+            ).pack(side=tk.LEFT, padx=4)
+            tk.Entry(
+                size_frame,
+                textvariable=bh_var,
+                width=6,
+                bg=self.colors["surface"],
+                fg=self.colors["text_primary"],
+                insertbackground=self.colors["text_primary"],
+            ).pack(side=tk.LEFT)
 
-            tk.Label(body, text="Open DevTools", bg=self.colors["background"], fg=self.colors["text_primary"]).grid(row=7, column=0, sticky="w", pady=(6,0))
+            tk.Label(
+                body,
+                text="Open DevTools",
+                bg=self.colors["background"],
+                fg=self.colors["text_primary"],
+            ).grid(row=7, column=0, sticky="w", pady=(6, 0))
             devtools_var = tk.BooleanVar(value=os.getenv("DEVTOOLS_OPEN", "0") == "1")
-            ttk.Checkbutton(body, variable=devtools_var).grid(row=7, column=1, sticky="w", padx=(8,0), pady=(6,0))
+            ttk.Checkbutton(body, variable=devtools_var).grid(
+                row=7, column=1, sticky="w", padx=(8, 0), pady=(6, 0)
+            )
 
             # Save/Close
-            actions = tk.Frame(settings_frame, bg=self.colors["surface"]) 
+            actions = tk.Frame(settings_frame, bg=self.colors["surface"])
             actions.pack(fill=tk.X)
             # Save feedback
             self.settings_status_var = tk.StringVar(value="")
-            tk.Label(actions, textvariable=self.settings_status_var, bg=self.colors["surface"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10)).pack(side=tk.LEFT, padx=12)
+            tk.Label(
+                actions,
+                textvariable=self.settings_status_var,
+                bg=self.colors["surface"],
+                fg=self.colors["text_secondary"],
+                font=(self.fonts["default"], 10),
+            ).pack(side=tk.LEFT, padx=12)
+
             def _save():
                 # Persist to .env-like file minimally (append or create project overrides)
                 try:
@@ -248,7 +501,7 @@ class TestRunnerGUI:
                     if os.path.exists(target):
                         with open(target, "r", encoding="utf-8") as f:
                             lines = f.read().splitlines()
-                    prefix = self.project_var.get().upper().replace("-","_")
+                    prefix = self.project_var.get().upper().replace("-", "_")
                     kv = {
                         f"{prefix}_USER_AGENT": ua_var.get().strip(),
                         f"{prefix}_EMAIL": email_var.get().strip(),
@@ -262,7 +515,7 @@ class TestRunnerGUI:
                     for k, v in kv.items():
                         found = False
                         for i, line in enumerate(lines):
-                            if line.startswith(k+"="):
+                            if line.startswith(k + "="):
                                 lines[i] = f"{k}={v}"
                                 found = True
                                 break
@@ -273,6 +526,7 @@ class TestRunnerGUI:
                     # Reload env and refresh projects so changes apply immediately
                     try:
                         from dotenv import load_dotenv as _ld
+
                         _ld(override=True)
                         self.projects = self.discover_projects()
                         self.refresh_all_project_combos(self.project_var.get())
@@ -287,15 +541,36 @@ class TestRunnerGUI:
                         pass
                 except Exception as e:
                     self.add_log(f"❌ Failed to save settings: {e}", "error")
-            tk.Button(actions, text="Save", command=_save, bg=self.colors["primary"], fg=self.contrast_on(self.colors["primary"]), bd=0, relief="flat", cursor="hand2").pack(side=tk.RIGHT, padx=8, pady=8)
+
+            ttk.Button(
+                actions,
+                text="Save",
+                command=_save,
+                style="Primary.TButton",
+                cursor="hand2",
+            ).pack(side=tk.RIGHT, padx=8, pady=8)
 
             # Footer
-            footer = tk.Frame(settings_frame, bg=self.colors["background"]) 
+            footer = tk.Frame(settings_frame, bg=self.colors["background"])
             footer.pack(fill=tk.X, pady=(4, 10))
-            tk.Label(footer, text="Created by Berkin", bg=self.colors["background"], fg=self.colors["text_secondary"], font=(self.fonts["default"], 10)).pack(side=tk.LEFT, padx=(12, 6))
-            link = tk.Label(footer, text="berkin.tech/en/about", bg=self.colors["background"], fg=self.colors["secondary"], cursor="hand2")
+            tk.Label(
+                footer,
+                text="Created by Berkin",
+                bg=self.colors["background"],
+                fg=self.colors["text_secondary"],
+                font=(self.fonts["default"], 10),
+            ).pack(side=tk.LEFT, padx=(12, 6))
+            link = tk.Label(
+                footer,
+                text="berkin.tech/en/about",
+                bg=self.colors["background"],
+                fg=self.colors["secondary"],
+                cursor="hand2",
+            )
             link.pack(side=tk.LEFT)
-            link.bind("<Button-1>", lambda e: webbrowser.open("https://berkin.tech/en/about"))
+            link.bind(
+                "<Button-1>", lambda e: webbrowser.open("https://berkin.tech/en/about")
+            )
 
             # Grid weights
             body.grid_columnconfigure(1, weight=1)
@@ -325,7 +600,7 @@ class TestRunnerGUI:
             y = widget.winfo_rooty() + 30
             self._tooltip = tk.Toplevel(self.root)
             self._tooltip.wm_overrideredirect(True)
-            self._tooltip.configure(bg=self.colors["surface_light"]) 
+            self._tooltip.configure(bg=self.colors["surface_light"])
             label = tk.Label(
                 self._tooltip,
                 text=text,
@@ -360,9 +635,13 @@ class TestRunnerGUI:
     def _save_prefs(self):
         try:
             data = {
-                "project": self.project_var.get() if hasattr(self, "project_var") else "",
+                "project": (
+                    self.project_var.get() if hasattr(self, "project_var") else ""
+                ),
                 "flow": self.flow_var.get() if hasattr(self, "flow_var") else "",
-                "mode": self.mode_var.get() if hasattr(self, "mode_var") else "headless",
+                "mode": (
+                    self.mode_var.get() if hasattr(self, "mode_var") else "headless"
+                ),
             }
             with open(self.prefs_path, "w", encoding="utf-8") as f:
                 json.dump(data, f)
@@ -373,7 +652,11 @@ class TestRunnerGUI:
         errors = []
         if not isinstance(flow_obj, dict):
             return ["Flow root must be an object"]
-        project = flow_obj.get("PROJECT_CONFIG") or flow_obj.get("TARGET_CONFIG") or flow_obj.get("BRAND_CONFIG")
+        project = (
+            flow_obj.get("PROJECT_CONFIG")
+            or flow_obj.get("TARGET_CONFIG")
+            or flow_obj.get("BRAND_CONFIG")
+        )
         if not isinstance(project, dict):
             errors.append("PROJECT_CONFIG must be an object")
         else:
@@ -393,11 +676,17 @@ class TestRunnerGUI:
             if not isinstance(name, str) or not name.strip():
                 errors.append(f"Step {idx}: 'name' is required")
             if action not in {"navigate", "click", "fill", "wait", "custom"}:
-                errors.append(f"Step {idx}: 'action' must be one of navigate/click/fill/wait/custom")
+                errors.append(
+                    f"Step {idx}: 'action' must be one of navigate/click/fill/wait/custom"
+                )
                 continue
-            if action == "navigate" and not (isinstance(step.get("url"), str) and step.get("url").strip()):
+            if action == "navigate" and not (
+                isinstance(step.get("url"), str) and step.get("url").strip()
+            ):
                 errors.append(f"Step {idx}: 'url' is required for action=navigate")
-            if action in {"click", "wait", "fill"} and not (isinstance(step.get("selector"), str) and step.get("selector").strip()):
+            if action in {"click", "wait", "fill"} and not (
+                isinstance(step.get("selector"), str) and step.get("selector").strip()
+            ):
                 errors.append(f"Step {idx}: 'selector' is required for action={action}")
             if action == "fill" and not isinstance(step.get("value"), str):
                 errors.append(f"Step {idx}: 'value' is required for action=fill")
@@ -539,7 +828,9 @@ class TestRunnerGUI:
             if current in flows:
                 self.flow_combo.set(current)
             elif flows:
-                last = self.prefs.get("flow", "") if isinstance(self.prefs, dict) else ""
+                last = (
+                    self.prefs.get("flow", "") if isinstance(self.prefs, dict) else ""
+                )
                 choose = last if last in flows else flows[0]
                 self.flow_combo.set(choose)
                 self.flow_var.set(choose)
@@ -617,10 +908,20 @@ class TestRunnerGUI:
 
             # Settings icon (for header)
             self.settings_icon = None
-            for name in ["settings.png", "settings-icon.png", "gear.png"]:
+            for name in [
+                "settings@2x.png",
+                "settings.png",
+                "settings-icon.png",
+                "gear.png",
+            ]:
                 path = os.path.join("assets", name)
                 if os.path.exists(path):
-                    s_img = Image.open(path).resize((24, 24), Image.Resampling.LANCZOS)
+                    # macOS: larger settings icon; others keep compact size
+                    icon_w = 48 if platform.system() == "Darwin" else 24
+                    icon_h = 48 if platform.system() == "Darwin" else 24
+                    s_img = Image.open(path).resize(
+                        (icon_w, icon_h), Image.Resampling.LANCZOS
+                    )
                     self.settings_icon = ImageTk.PhotoImage(s_img)
                     break
 
@@ -637,6 +938,67 @@ class TestRunnerGUI:
         # Configure ttk styles
         style = ttk.Style()
         style.theme_use("clam")
+
+        # macOS focus/active color overrides for classic Tk widgets
+        # On macOS, when a window gains focus, Tk can adjust widget colors
+        # in a way that reduces contrast for custom dark themes. Enforce
+        # consistent colors via the option database for tk.* widgets.
+        try:
+            if platform.system() == "Darwin":
+                # Base colors
+                self.root.option_add("*Background", self.colors["background"])
+                self.root.option_add("*Foreground", self.colors["text_primary"])
+
+                # Buttons
+                self.root.option_add("*Button.Background", self.colors["surface"])
+                self.root.option_add("*Button.Foreground", self.colors["text_primary"])
+                # Ensure active state colors remain high-contrast on macOS
+                # Tk classic option names use lowercase 'activeBackground/activeForeground'
+                self.root.option_add(
+                    "*Button.activeBackground", self.colors["surface_light"]
+                )  # tk
+                self.root.option_add(
+                    "*Button.activeForeground", self.colors["text_primary"]
+                )  # tk
+                # Also set titlecase aliases for safety on some Tk builds
+                self.root.option_add(
+                    "*Button.ActiveBackground", self.colors["surface_light"]
+                )
+                self.root.option_add(
+                    "*Button.ActiveForeground", self.colors["text_primary"]
+                )
+
+                # Remove borders and make buttons visually flat (background blends)
+                self.root.option_add("*Button.highlightThickness", 0)
+                self.root.option_add("*Button.borderWidth", 0)
+                self.root.option_add("*Button.relief", "flat")
+
+                # Labels
+                self.root.option_add("*Label.Background", self.colors["background"])
+                self.root.option_add("*Label.Foreground", self.colors["text_primary"])
+
+                # Entries/Text
+                self.root.option_add("*Entry.Background", self.colors["surface"])
+                self.root.option_add("*Entry.Foreground", self.colors["text_primary"])
+                self.root.option_add("*Entry.InsertBackground", self.colors["primary"])
+                self.root.option_add(
+                    "*Entry.SelectBackground", self.colors["selection"]
+                )
+
+                self.root.option_add("*Text.Background", self.colors["surface_dark"])
+                self.root.option_add("*Text.Foreground", self.colors["text_primary"])
+                self.root.option_add("*Text.InsertBackground", self.colors["primary"])
+                self.root.option_add("*Text.SelectBackground", self.colors["selection"])
+
+                # Check/Radio
+                self.root.option_add(
+                    "*Checkbutton.Background", self.colors["background"]
+                )
+                self.root.option_add(
+                    "*Radiobutton.Background", self.colors["background"]
+                )
+        except Exception:
+            pass
 
         # Configure Notebook style for dark theme
         style.configure(
@@ -748,6 +1110,105 @@ class TestRunnerGUI:
             "Treeview.Heading", background=[("active", self.colors["surface_light"])]
         )
 
+        # Sidebar button style to avoid macOS Aqua overrides
+        style.configure(
+            "Sidebar.TButton",
+            background=self.colors["surface_light"],
+            foreground=self.colors["text_primary"],
+            borderwidth=0,
+            relief="flat",
+            padding=[10, 6],
+            focuscolor="none",
+        )
+        style.map(
+            "Sidebar.TButton",
+            background=[
+                ("active", self.colors["surface_light"]),
+                ("pressed", self.colors["surface_light"]),
+                ("focus", self.colors["surface_light"]),
+                ("!disabled", self.colors["surface_light"]),
+            ],
+            foreground=[
+                ("active", self.colors["text_primary"]),
+                ("pressed", self.colors["text_primary"]),
+                ("disabled", self.colors["text_secondary"]),
+            ],
+            relief=[("pressed", "flat")],
+        )
+
+        # Header icon buttons (Run/Stop/Clear)
+        style.configure(
+            "HeaderIcon.TButton",
+            background=self.colors["surface_dark"],
+            foreground=self.colors["text_primary"],
+            borderwidth=0,
+            relief="flat",
+            padding=[4, 4],
+            focuscolor="none",
+        )
+        style.map(
+            "HeaderIcon.TButton",
+            background=[
+                ("active", self.colors["surface_dark"]),
+                ("pressed", self.colors["surface_dark"]),
+                ("focus", self.colors["surface_dark"]),
+            ],
+            foreground=[("active", self.colors["text_primary"])],
+            relief=[("pressed", "flat")],
+        )
+
+        # Generic action styles
+        style.configure(
+            "Primary.TButton",
+            background=self.colors["primary"],
+            foreground=self.contrast_on(self.colors["primary"]),
+            borderwidth=0,
+            relief="flat",
+            padding=[10, 6],
+        )
+        style.map(
+            "Primary.TButton",
+            background=[
+                ("active", self.colors["primary"]),
+                ("pressed", self.colors["primary"]),
+            ],
+            foreground=[("active", self.contrast_on(self.colors["primary"]))],
+        )
+
+        style.configure(
+            "Secondary.TButton",
+            background=self.colors["secondary"],
+            foreground=self.contrast_on(self.colors["secondary"]),
+            borderwidth=0,
+            relief="flat",
+            padding=[10, 6],
+        )
+        style.map(
+            "Secondary.TButton",
+            background=[
+                ("active", self.colors["secondary"]),
+                ("pressed", self.colors["secondary"]),
+            ],
+            foreground=[("active", self.contrast_on(self.colors["secondary"]))],
+        )
+
+        style.configure(
+            "Surface.TButton",
+            background=self.colors["surface_light"],
+            foreground=self.colors["text_primary"],
+            borderwidth=0,
+            relief="flat",
+            padding=[10, 6],
+        )
+        style.map(
+            "Surface.TButton",
+            background=[
+                ("active", self.colors["surface_light"]),
+                ("pressed", self.colors["surface_light"]),
+            ],
+            foreground=[("active", self.colors["text_primary"])],
+        )
+
     def load_icons(self):
         """Load and resize icons from assets folder"""
         try:
@@ -798,10 +1259,12 @@ class TestRunnerGUI:
 
         # Control panel - compact horizontal layout
         control_frame = tk.Frame(header_frame, bg=self.colors["surface_dark"])
-        control_frame.pack(side=tk.LEFT, padx=self.spacing["md"], pady=self.spacing["sm"], expand=True)
+        control_frame.pack(
+            side=tk.LEFT, padx=self.spacing["md"], pady=self.spacing["sm"], expand=True
+        )
 
         # Project selection
-        project_frame = tk.Frame(control_frame, bg=self.colors["surface"]) 
+        project_frame = tk.Frame(control_frame, bg=self.colors["surface"])
         project_frame.pack(side="left", padx=(0, self.spacing["md"]))
 
         tk.Label(
@@ -812,7 +1275,11 @@ class TestRunnerGUI:
             font=(DEFAULT_FONT, 10),
         ).pack(side="left")
         # Default to first discovered project if available
-        default_project = self.prefs.get("project") if self.prefs.get("project") in self.projects else next(iter(self.projects.keys()), "")
+        default_project = (
+            self.prefs.get("project")
+            if self.prefs.get("project") in self.projects
+            else next(iter(self.projects.keys()), "")
+        )
         self.project_var = tk.StringVar(value=default_project)
         self.project_combo = ttk.Combobox(
             project_frame,
@@ -824,10 +1291,12 @@ class TestRunnerGUI:
             style="Chip.TCombobox",
         )
         self.project_combo.pack(side="left", padx=(self.spacing["sm"], 0))
-        self.project_combo.bind("<<ComboboxSelected>>", lambda e: self.on_project_change())
+        self.project_combo.bind(
+            "<<ComboboxSelected>>", lambda e: self.on_project_change()
+        )
 
         # Flow selection (populated by project)
-        flow_frame = tk.Frame(control_frame, bg=self.colors["surface"]) 
+        flow_frame = tk.Frame(control_frame, bg=self.colors["surface"])
         flow_frame.pack(side="left", padx=(0, self.spacing["md"]))
         tk.Label(
             flow_frame,
@@ -855,7 +1324,7 @@ class TestRunnerGUI:
             self.refresh_flows_for_project(default_project)
 
         # Mode selection
-        mode_frame = tk.Frame(control_frame, bg=self.colors["surface_dark"]) 
+        mode_frame = tk.Frame(control_frame, bg=self.colors["surface_dark"])
         mode_frame.pack(side=tk.LEFT, padx=(0, self.spacing["md"]))
 
         self.mode_var = tk.StringVar(value=self.prefs.get("mode", "headless"))
@@ -881,106 +1350,89 @@ class TestRunnerGUI:
 
         # Run button - borderless icon only
         if self.play_icon:
-            self.run_button = tk.Button(
+            self.run_button = ttk.Button(
                 button_frame,
                 image=self.play_icon,
                 command=self.start_test,
-                bg=self.colors["surface_dark"],
+                style="HeaderIcon.TButton",
+                cursor="hand2",
+            )
+            self.run_button.tooltip = tk.Label(
+                button_frame,
+                text="Run test",
+                bg=self.colors["surface_light"],
                 fg=self.colors["text_primary"],
                 bd=0,
-                highlightthickness=0,
-                relief="flat",
-                cursor="hand2",
-                activebackground=self.colors["surface_dark"],
             )
-            self.run_button.tooltip = tk.Label(button_frame, text="Run test", bg=self.colors["surface_light"], fg=self.colors["text_primary"], bd=0)
         else:
-            self.run_button = tk.Button(
+            self.run_button = ttk.Button(
                 button_frame,
                 text="▶",
                 command=self.start_test,
-                font=(self.fonts["default"], 18),
-                bg=self.colors["surface_dark"],
-                fg=self.colors["success"],
-                bd=0,
-                highlightthickness=0,
-                relief="flat",
+                style="HeaderIcon.TButton",
                 cursor="hand2",
-                activebackground=self.colors["surface_dark"],
             )
 
         self.run_button.pack(side=tk.LEFT, padx=self.spacing["sm"])
         # Simple tooltip bindings
         try:
-            self.run_button.bind("<Enter>", lambda e: self._show_tooltip(self.run_button, "Run test"))
+            self.run_button.bind(
+                "<Enter>", lambda e: self._show_tooltip(self.run_button, "Run test")
+            )
             self.run_button.bind("<Leave>", lambda e: self._hide_tooltip())
         except Exception:
             pass
 
         # Stop button - borderless icon only
         if self.stop_icon:
-            self.stop_button = tk.Button(
+            self.stop_button = ttk.Button(
                 button_frame,
                 image=self.stop_icon,
                 command=self.stop_test,
-                bg=self.colors["surface_dark"],
+                style="HeaderIcon.TButton",
+                cursor="hand2",
+            )
+            self.stop_button.tooltip = tk.Label(
+                button_frame,
+                text="Stop test",
+                bg=self.colors["surface_light"],
                 fg=self.colors["text_primary"],
                 bd=0,
-                highlightthickness=0,
-                relief="flat",
-                cursor="hand2",
-                activebackground=self.colors["surface_dark"],
             )
-            self.stop_button.tooltip = tk.Label(button_frame, text="Stop test", bg=self.colors["surface_light"], fg=self.colors["text_primary"], bd=0)
         else:
-            self.stop_button = tk.Button(
+            self.stop_button = ttk.Button(
                 button_frame,
                 text="⏹",
                 command=self.stop_test,
-                font=(self.fonts["default"], 18),
-                bg=self.colors["surface_dark"],
-                fg=self.colors["warning"],
-                bd=0,
-                highlightthickness=0,
-                relief="flat",
+                style="HeaderIcon.TButton",
                 cursor="hand2",
-                activebackground=self.colors["surface_dark"],
             )
 
         self.stop_button.pack(side=tk.LEFT, padx=self.spacing["sm"])
         try:
-            self.stop_button.bind("<Enter>", lambda e: self._show_tooltip(self.stop_button, "Stop test"))
+            self.stop_button.bind(
+                "<Enter>", lambda e: self._show_tooltip(self.stop_button, "Stop test")
+            )
             self.stop_button.bind("<Leave>", lambda e: self._hide_tooltip())
         except Exception:
             pass
 
         # Clear button - borderless icon only
         if self.delete_icon:
-            self.clear_button = tk.Button(
+            self.clear_button = ttk.Button(
                 button_frame,
                 image=self.delete_icon,
                 command=self.clear_logs,
-                bg=self.colors["surface_dark"],
-                fg=self.colors["text_primary"],
-                bd=0,
-                highlightthickness=0,
-                relief="flat",
+                style="HeaderIcon.TButton",
                 cursor="hand2",
-                activebackground=self.colors["surface_dark"],
             )
         else:
-            self.clear_button = tk.Button(
+            self.clear_button = ttk.Button(
                 button_frame,
                 text="🗑",
                 command=self.clear_logs,
-                font=(self.fonts["default"], 18),
-                bg=self.colors["surface_dark"],
-                fg=self.colors["danger"],
-                bd=0,
-                highlightthickness=0,
-                relief="flat",
+                style="HeaderIcon.TButton",
                 cursor="hand2",
-                activebackground=self.colors["surface_dark"],
             )
 
         self.clear_button.pack(side=tk.LEFT, padx=self.spacing["sm"])
@@ -1042,10 +1494,16 @@ class TestRunnerGUI:
             "timestamp", foreground=self.colors["text_secondary"]
         )
         # Clickable link style
-        self.logs_text.tag_configure("link", foreground=self.colors["secondary"], underline=True)
+        self.logs_text.tag_configure(
+            "link", foreground=self.colors["secondary"], underline=True
+        )
         self.logs_text.tag_bind("link", "<Button-1>", lambda e: self.notebook.select(1))
-        self.logs_text.tag_bind("link", "<Enter>", lambda e: self.logs_text.config(cursor="hand2"))
-        self.logs_text.tag_bind("link", "<Leave>", lambda e: self.logs_text.config(cursor="xterm"))
+        self.logs_text.tag_bind(
+            "link", "<Enter>", lambda e: self.logs_text.config(cursor="hand2")
+        )
+        self.logs_text.tag_bind(
+            "link", "<Leave>", lambda e: self.logs_text.config(cursor="xterm")
+        )
 
     def setup_results_tab(self):
         """Create functional results tab with test summary and artifacts"""
@@ -1057,7 +1515,7 @@ class TestRunnerGUI:
         results_content.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
         # Results header
-        header_frame = tk.Frame(results_content, bg=self.colors["surface"]) 
+        header_frame = tk.Frame(results_content, bg=self.colors["surface"])
         header_frame.pack(fill=tk.X, padx=self.spacing["md"], pady=self.spacing["md"])
 
         tk.Label(
@@ -1069,21 +1527,17 @@ class TestRunnerGUI:
         ).pack(side=tk.LEFT)
 
         # Refresh button
-        refresh_btn = tk.Button(
+        refresh_btn = ttk.Button(
             header_frame,
             text="🔄 Refresh",
             command=self.refresh_results,
-            font=(self.fonts["default"], 10),
-            bg=self.colors["primary"],
-            fg=self.contrast_on(self.colors["primary"]),
-            bd=0,
-            relief="flat",
+            style="Primary.TButton",
             cursor="hand2",
         )
         refresh_btn.pack(side=tk.RIGHT)
 
         # Split view: Summary on left, Artifacts on right
-        content_frame = tk.Frame(results_content, bg=self.colors["background"]) 
+        content_frame = tk.Frame(results_content, bg=self.colors["background"])
         content_frame.pack(
             fill=tk.BOTH,
             expand=True,
@@ -1155,28 +1609,38 @@ class TestRunnerGUI:
         artifact_buttons = tk.Frame(right_frame, bg=self.colors["background"])
         artifact_buttons.pack(fill=tk.X, pady=(self.spacing["sm"], 0))
 
-        tk.Button(
+        (ttk.Button if platform.system() == "Darwin" else tk.Button)(
             artifact_buttons,
             text="📁 Open Folder",
             command=self.open_logs_folder,
-            font=(self.fonts["default"], 9),
-            bg=self.colors["secondary"],
-            fg=self.contrast_on(self.colors["secondary"]),
-            bd=0,
-            relief="flat",
-            cursor="hand2",
+            **(
+                {"style": "Secondary.TButton", "cursor": "hand2"}
+                if platform.system() == "Darwin"
+                else {
+                    "bg": self.colors["secondary"],
+                    "fg": self.contrast_on(self.colors["secondary"]),
+                    "bd": 0,
+                    "relief": "flat",
+                    "cursor": "hand2",
+                }
+            ),
         ).pack(side=tk.LEFT, padx=(0, 5))
 
-        tk.Button(
+        (ttk.Button if platform.system() == "Darwin" else tk.Button)(
             artifact_buttons,
             text="👁️ View Selected",
             command=self.view_selected_artifact_button,
-            font=(self.fonts["default"], 9),
-            bg=self.colors["secondary"],
-            fg=self.contrast_on(self.colors["secondary"]),
-            bd=0,
-            relief="flat",
-            cursor="hand2",
+            **(
+                {"style": "Secondary.TButton", "cursor": "hand2"}
+                if platform.system() == "Darwin"
+                else {
+                    "bg": self.colors["secondary"],
+                    "fg": self.contrast_on(self.colors["secondary"]),
+                    "bd": 0,
+                    "relief": "flat",
+                    "cursor": "hand2",
+                }
+            ),
         ).pack(side=tk.LEFT)
 
     def setup_history_tab(self):
@@ -1203,16 +1667,21 @@ class TestRunnerGUI:
         ).pack(side=tk.LEFT, padx=self.spacing["md"], pady=self.spacing["sm"])
 
         # Clear all logs button
-        clear_logs_btn = tk.Button(
+        clear_logs_btn = (ttk.Button if platform.system() == "Darwin" else tk.Button)(
             header_frame,
             text="🧹 Clear All Logs",
             command=self.clear_all_logs,
-            font=(self.fonts["default"], 10),
-            bg=self.colors["secondary"],
-            fg=self.contrast_on(self.colors["secondary"]),
-            bd=0,
-            relief="flat",
-            cursor="hand2",
+            **(
+                {"style": "Secondary.TButton", "cursor": "hand2"}
+                if platform.system() == "Darwin"
+                else {
+                    "bg": self.colors["secondary"],
+                    "fg": self.contrast_on(self.colors["secondary"]),
+                    "bd": 0,
+                    "relief": "flat",
+                    "cursor": "hand2",
+                }
+            ),
         )
         clear_logs_btn.pack(
             side=tk.RIGHT,
@@ -1221,16 +1690,21 @@ class TestRunnerGUI:
         )
 
         # Load history button
-        load_btn = tk.Button(
+        load_btn = (ttk.Button if platform.system() == "Darwin" else tk.Button)(
             header_frame,
             text=" Refresh",
             command=self.load_history_data,
-            font=(self.fonts["default"], 10),
-            bg=self.colors["primary"],
-            fg=self.contrast_on(self.colors["primary"]),
-            bd=0,
-            relief="flat",
-            cursor="hand2",
+            **(
+                {"style": "Primary.TButton", "cursor": "hand2"}
+                if platform.system() == "Darwin"
+                else {
+                    "bg": self.colors["primary"],
+                    "fg": self.contrast_on(self.colors["primary"]),
+                    "bd": 0,
+                    "relief": "flat",
+                    "cursor": "hand2",
+                }
+            ),
         )
         load_btn.pack(side=tk.RIGHT, padx=self.spacing["md"], pady=self.spacing["sm"])
 
@@ -1277,11 +1751,11 @@ class TestRunnerGUI:
         if self.test_running:
             self.run_button.config(state="disabled")
             self.stop_button.config(state="normal")
-            self.status_label.config(text="Running", fg=self.colors["warning"]) 
+            self.status_label.config(text="Running", fg=self.colors["warning"])
         else:
             self.run_button.config(state=("normal" if has_flow else "disabled"))
             self.stop_button.config(state="disabled")
-            self.status_label.config(text="Ready", fg=self.colors["success"]) 
+            self.status_label.config(text="Ready", fg=self.colors["success"])
 
     def start_test(self):
         """Start the test execution"""
@@ -1832,15 +2306,11 @@ class TestRunnerGUI:
                 )
 
             # Close button
-            close_btn = tk.Button(
+            close_btn = ttk.Button(
                 popup,
                 text="Close",
                 command=popup.destroy,
-                bg=self.colors["primary"],
-                fg=self.contrast_on(self.colors["primary"]),
-                font=(self.fonts["default"], 10),
-                bd=0,
-                relief="flat",
+                style="Primary.TButton",
                 cursor="hand2",
             )
             close_btn.pack(pady=10)
@@ -2062,16 +2532,21 @@ class TestRunnerGUI:
             text_widget.config(state="disabled")
 
         # Kapatma butonu ekle
-        close_button = tk.Button(
+        close_button = (ttk.Button if platform.system() == "Darwin" else tk.Button)(
             popup,
             text="Kapat",
             command=popup.destroy,
-            font=(self.fonts["default"], 10),
-            bg=self.colors["secondary"],
-            fg=self.contrast_on(self.colors["secondary"]),
-            bd=0,
-            relief="flat",
-            cursor="hand2",
+            **(
+                {"style": "Secondary.TButton", "cursor": "hand2"}
+                if platform.system() == "Darwin"
+                else {
+                    "bg": self.colors["secondary"],
+                    "fg": self.contrast_on(self.colors["secondary"]),
+                    "bd": 0,
+                    "relief": "flat",
+                    "cursor": "hand2",
+                }
+            ),
         )
         close_button.pack(pady=self.spacing["sm"])
 
@@ -2246,7 +2721,15 @@ class TestRunnerGUI:
                     self.history_tree.insert(
                         "",
                         "end",
-                        values=(date, time, project, mode, status, duration_str, details),
+                        values=(
+                            date,
+                            time,
+                            project,
+                            mode,
+                            status,
+                            duration_str,
+                            details,
+                        ),
                     )
 
                 except Exception as e:
@@ -2390,15 +2873,11 @@ class TestRunnerGUI:
                 fg=self.colors["text_primary"],
             ).pack(side=tk.LEFT)
 
-            tk.Button(
+            ttk.Button(
                 header,
                 text="➕ New Project",
                 command=self.builder_create_new_project,
-                font=(self.fonts["default"], 10),
-                bg=self.colors["secondary"],
-                fg=self.contrast_on(self.colors["secondary"]),
-                bd=0,
-                relief="flat",
+                style="Secondary.TButton",
                 cursor="hand2",
             ).pack(side=tk.RIGHT)
 
@@ -2595,15 +3074,11 @@ class TestRunnerGUI:
             )
             self.builder_error_label.pack(side=tk.LEFT, padx=(0, 10))
             self.builder_error_var.set("")
-            tk.Button(
+            ttk.Button(
                 save_frame,
                 text="Save Flow",
                 command=self.builder_save_flow,
-                bg=self.colors["success"],
-                fg=self.contrast_on(self.colors["success"]),
-                activebackground=self.colors["surface_dark"],
-                activeforeground=self.colors["text_primary"],
-                bd=0,
+                style="Primary.TButton",
             ).pack(side=tk.LEFT)
             self.builder_status_var = tk.StringVar()
             tk.Label(
@@ -2620,6 +3095,7 @@ class TestRunnerGUI:
         try:
             s = (name or "").strip()
             import re
+
             s = re.sub(r"\s+", "-", s)
             s = re.sub(r"[^A-Za-z0-9_-]", "", s)
             return s.lower()[:50] or "project"
@@ -2642,7 +3118,9 @@ class TestRunnerGUI:
 
     def builder_create_new_project(self):
         try:
-            name = simpledialog.askstring("New Project", "Project name (e.g., SHOP):", parent=self.root)
+            name = simpledialog.askstring(
+                "New Project", "Project name (e.g., SHOP):", parent=self.root
+            )
             if not name or not name.strip():
                 return
             folder = self._normalize_project_folder(name)
