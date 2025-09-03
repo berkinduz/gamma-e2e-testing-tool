@@ -1,31 +1,73 @@
 {
-  "theme": "dark-slate",
-  "colors": {
-    "background": "#0b1220",
-    "surface": "#111827",
-    "surface_light": "#1f2937",
-    "surface_dark": "#0a0f1a",
-    "primary": "#3b82f6",
-    "secondary": "#22d3ee",
-    "accent": "#f59e0b",
-    "success": "#10b981",
-    "warning": "#fbbf24",
-    "danger": "#ef4444",
-    "text_primary": "#e5e7eb",
-    "text_secondary": "#9ca3af",
-    "text_muted": "#4b5563",
-    "border": "#1f2937",
-    "selection": "#1f2937"
+  "current_theme": "dark",
+  "themes": {
+    "dark": {
+      "name": "Dark Slate",
+      "colors": {
+        "background": "#0b1220",
+        "surface": "#111827",
+        "surface_light": "#1f2937",
+        "surface_dark": "#0a0f1a",
+        "surface_secondary": "#2a3443",
+        "primary": "#3b82f6",
+        "secondary": "#22d3ee",
+        "accent": "#f59e0b",
+        "success": "#10b981",
+        "warning": "#fbbf24",
+        "danger": "#ef4444",
+        "text_primary": "#e5e7eb",
+        "text_secondary": "#9ca3af",
+        "text_muted": "#4b5563",
+        "border": "#1f2937",
+        "selection": "#1f2937"
+      },
+      "spacing": {
+        "xs": 4,
+        "sm": 8,
+        "md": 16,
+        "lg": 24,
+        "xl": 32
+      },
+      "fonts": {
+        "default": "Inter",
+        "mono": "JetBrains Mono"
+      }
+    },
+    "light": {
+      "name": "Light Modern",
+      "colors": {
+        "background": "#ffffff",
+        "surface": "#f8fafc",
+        "surface_light": "#f1f5f9",
+        "surface_dark": "#e2e8f0",
+        "surface_secondary": "#cbd5e1",
+        "primary": "#3b82f6",
+        "secondary": "#06b6d4",
+        "accent": "#f59e0b",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "danger": "#ef4444",
+        "text_primary": "#1e293b",
+        "text_secondary": "#64748b",
+        "text_muted": "#94a3b8",
+        "border": "#e2e8f0",
+        "selection": "#cbd5e1"
+      },
+      "spacing": {
+        "xs": 4,
+        "sm": 8,
+        "md": 16,
+        "lg": 24,
+        "xl": 32
+      },
+      "fonts": {
+        "default": "Inter",
+        "mono": "JetBrains Mono"
+      }
+    }
   },
-  "spacing": {
-    "xs": 4,
-    "sm": 8,
-    "md": 16,
-    "lg": 24,
-    "xl": 32
-  },
-  "fonts": {
-    "default": "Inter",
-    "mono": "JetBrains Mono"
+  "user_customizations": {
+    "enabled": false,
+    "overrides": {}
   }
 }

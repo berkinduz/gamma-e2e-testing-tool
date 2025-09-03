@@ -34,7 +34,7 @@ Multi-project e-commerce test automation tool built with Selenium and Python GUI
 - **Artifact Collection**: Screenshots, logs, and analysis on failures
 - **Test Builder**: Visual test creation interface
 - **Cross-platform**: Windows, macOS, Linux
- - **Settings Panel**: Per‑project Email/Password/User‑Agent, normal mode window size and DevTools toggle; changes apply without restart
+- **Settings Panel**: Per‑project Email/Password/User‑Agent, normal mode window size and DevTools toggle, theme selection; smart restart notifications
 
 ## 📁 Project Structure
 
@@ -42,6 +42,23 @@ Multi-project e-commerce test automation tool built with Selenium and Python GUI
 gamma/
 ├── 📁 assets/           # Icons and images
 ├── 📁 config/           # Theme configuration
+├── 📁 core/             # Core business logic
+│   ├── runner.py        # Test execution logic
+│   ├── builder.py       # Test builder logic
+│   ├── history.py       # History management
+│   ├── results.py       # Results management
+│   └── utils.py         # Utility functions
+├── 📁 ui/               # UI components
+│   ├── theme.py         # Theme management
+│   ├── styles.py        # UI styles
+│   ├── icons.py         # Icon management
+│   └── layout.py        # Main layout structure
+├── 📁 tabs/             # Tab components
+│   ├── logs_tab.py      # Logs tab UI
+│   ├── results_tab.py   # Results tab UI
+│   ├── history_tab.py   # History tab UI
+│   ├── builder_tab.py   # Builder tab UI
+│   └── settings_tab.py  # Settings tab UI
 ├── 📁 tests/            # Test framework
 │   ├── projects/        # Project-specific test folders
 │   │   ├── GOOGLE/      # Google project tests
@@ -79,7 +96,7 @@ Option A) Edit `.env` with your project credentials (recommended for CI):
 GOOGLE_EMAIL=your_email@gmail.com
 GOOGLE_PASSWORD=your_password
 
-# Example Project  
+# Example Project
 EXAMPLE_EMAIL=test@example.com
 EXAMPLE_PASSWORD=test123
 
@@ -88,7 +105,7 @@ NEW_PROJECT_EMAIL=user@newproject.com
 NEW_PROJECT_PASSWORD=password123
 ```
 
-Option B) Use the GUI Settings tab to set Email/Password/User‑Agent and Browser options (applies immediately).
+Option B) Use the GUI Settings tab to set Email/Password/User‑Agent, Browser options, and Theme selection. Browser settings apply immediately, theme changes require restart.
 
 ### 3. Run Tests
 
@@ -124,7 +141,7 @@ Place `tests/projects/<PROJECT>/<FLOW>.json`:
     },
     {
       "name": "Wait for search",
-      "action": "wait", 
+      "action": "wait",
       "selector": "#search-input",
       "timeout": 20
     },
@@ -135,7 +152,7 @@ Place `tests/projects/<PROJECT>/<FLOW>.json`:
       "value": "$EMAIL"
     },
     {
-      "name": "Fill password", 
+      "name": "Fill password",
       "action": "fill",
       "selector": "#password",
       "value": "$PASSWORD"
@@ -145,13 +162,15 @@ Place `tests/projects/<PROJECT>/<FLOW>.json`:
 ```
 
 **Special Tokens:**
+
 - `$EMAIL` → automatically replaced with `<PROJECT>_EMAIL` from `.env`
 - `$PASSWORD` → automatically replaced with `<PROJECT>_PASSWORD` from `.env`
 
 **Supported Actions:**
+
 - `navigate`: Go to URL
 - `click`: Click element
-- `fill`: Fill input field  
+- `fill`: Fill input field
 - `wait`: Wait for element
 
 ### Option 3: Python Scripts (Advanced)
@@ -175,7 +194,14 @@ LOGS_MAX_RUNS=10                 # Keep only latest N test runs
 
 ### Theme Configuration
 
-Edit `config/theme_config.json` to customize colors and styling.
+The application supports multiple themes with customizable settings:
+
+- **Dark Theme** (default): Modern dark interface
+- **Light Theme**: Clean light interface
+- **Theme Switching**: Change themes via Settings tab
+- **Custom Themes**: Edit `config/theme_config.json` to add new themes
+
+Theme changes require application restart and are automatically saved.
 
 ## 🚀 Advanced Usage
 
@@ -201,9 +227,10 @@ GOOGLE_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 ### Test Artifacts
 
 Failed tests automatically save:
+
 - Screenshots at failure points
 - Console error logs
-- Network error summaries  
+- Network error summaries
 - Page analysis data
 - Full test logs
 
@@ -234,7 +261,7 @@ Failed tests automatically save:
 ### Common Issues
 
 - **Element not found**: Check selector, timing, iframes
-- **Headless failures**: Verify window size, scale factor  
+- **Headless failures**: Verify window size, scale factor
 - **Screenshot issues**: Check file permissions, disk space
 - **Import errors**: Verify `sys.path.append` and `__init__.py` files
 
@@ -249,7 +276,8 @@ Use the GUI Logs tab for details; you can also increase Selenium/console verbosi
 
 - Use Settings to enter Email/Password/User‑Agent; values apply instantly, no restart needed.
 - Normal mode browser size and DevTools can be set from Settings.
-- When a test finishes, the Logs tab shows a “Click to see results” link.
+- Change themes from Settings tab; theme changes require application restart.
+- When a test finishes, the Logs tab shows a "Click to see results" link.
 - You can clear all logs from the History tab.
 ```
 
@@ -287,11 +315,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🚧 Next steps
 
 - Edit flows in the GUI
+
   - Drag-and-drop step reordering, multi-select delete
   - JSON diff/preview and “validate before save”
   - Inline selector tester (quick probe) for CSS selectors
 
 - Automation & scheduling
+
   - Built-in scheduler for recurring runs (cron-like UI in Settings)
   - GitHub Actions workflow with cron, matrix (projects/flows), and artifact upload
   - Notifications: Slack/Telegram/webhook on success/failure with links to artifacts
@@ -299,16 +329,19 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - CLI flags for schedule files, retries, shard/parallel config
 
 - More modern UI/UX
+
   - Inline preview in Results (PNG/JSON/TXT)
   - History filters (Project/Status/Date) + search
   - Global toasts and keyboard shortcuts (e.g., Ctrl+R to Run)
 
 - More actions
+
   - assertText/assertUrl/assertVisible
   - hover/select (dropdown), scrollTo, pressKey, uploadFile
   - waitForUrlContains, waitForNetworkIdle
 
 - CLI & orchestration
+
   - `gamma run --project <P> --flow <F> --headless`
   - Parallel runs (process-based)
 
